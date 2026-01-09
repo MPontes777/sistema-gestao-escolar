@@ -1,0 +1,197 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  //output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Tabela Usuario
+model Usuario {
+  id         String   @id @default(uuid())
+  nome       String
+  email      String   @unique
+  senha      String
+  perfil     Perfil
+  ativo      Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  inativadoAt   DateTime?
+  updatedAt  DateTime @updatedAt
+
+  // Relacionamentos
+  disciplinas     ProfessorDisciplina[]
+  planejamentos   Planejamento[]
+  auditLogs       AuditLog[]
+
+  @@map("usuarios")
+}
+
+// Escolhas predeterminadas
+enum Perfil {
+  ADMIN
+  PROFESSOR
+}
+
+// Tabela Disciplina
+model Disciplina {
+  id          String   @id @default(uuid())
+  nome        String   @unique
+  ativo       Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  inativadoAt   DateTime?
+  updatedAt   DateTime @updatedAt
+
+  // Relacionamentos
+  professores    ProfessorDisciplina[]
+  notas          Nota[]
+  planejamentos  Planejamento[]
+
+  @@map("disciplinas")
+}
+
+// Tabela Intermediária Professor Disciplinas
+model ProfessorDisciplina {
+  id            String   @id @default(uuid())
+  professorId   String
+  disciplinaId  String
+  createdAt     DateTime @default(now())
+
+  // Relacionamentos (onDelete: Cascade, Campo deletado, relacionamento deletado, garante integridade)
+  professor     Usuario     @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  disciplina    Disciplina  @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+
+  // Professor vinculado apenas uma vez a uma mesma disciplina
+  @@unique([professorId, disciplinaId])
+  @@map("professor_disciplinas")
+}
+
+// Tabela Aluno
+model Aluno {
+  id              String    @id @default(uuid())
+  matricula       String    @unique
+  nome            String
+  cpf             String    @unique
+  dataNascimento  DateTime
+  email           String
+  telefone        String
+  nomeResponsavel String
+  endereco        String
+  turmaId         String
+  ativo           Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  inativadoAt     DateTime?
+  updatedAt       DateTime  @updatedAt
+
+  // Relacionamentos (onDelete: SetNull, turma deletada, aluno mantido)
+  turma  Turma?  @relation(fields: [turmaId], references: [id], onDelete: SetNull)
+  notas  Nota[]
+
+  @@map("alunos")
+}
+
+// Tabela Turma
+model Turma {
+  id            String   @id @default(uuid())
+  anoSerie      String
+  letra         String
+  anoLetivo     Int
+  periodo       Periodo
+  nomeCompleto  String
+  ativo         Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  inativadoAt   DateTime?
+  updatedAt     DateTime @updatedAt
+
+  // Relacionamentos
+  alunos         Aluno[]
+  planejamentos  Planejamento[]
+
+  // Não existem duas turmas iguais
+  @@unique([anoSerie, letra, periodo, anoLetivo])
+  @@map("turmas")
+}
+
+// Escolhas predeterminadas
+enum Periodo {
+  MATUTINO
+  VESPERTINO
+  NOTURNO
+}
+
+// Tabelas Nota
+model Nota {
+  id            String   @id @default(uuid())
+  alunoId       String
+  disciplinaId  String
+  bimestre1     Float?
+  bimestre2     Float?
+  bimestre3     Float?
+  bimestre4     Float?
+  mediaFinal    Float?   // (bim1 + bim2 + bim3 + bim4) / 4
+  criterio      String?  // Aprovado, Reprovado ou Cursando, caso o bim4 esteja em branco
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relacionamentos
+  aluno       Aluno       @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  disciplina  Disciplina  @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+
+  // Cada aluno tem uma nota em cada disciplina
+  @@unique([alunoId, disciplinaId])
+  @@map("notas")
+}
+
+// Tabela Planejamento
+model Planejamento {
+  id            String   @id @default(uuid())
+  professorId   String
+  turmaId       String
+  disciplinaId  String
+  titulo        String
+  objetivo      String?
+  conteudo      String?
+  metodologia   String?
+  data          DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+// Relacionamentos
+  professor   Usuario     @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  turma       Turma       @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+  disciplina  Disciplina  @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+
+  @@map("planejamentos")
+}
+
+//tabela auditoria log
+model AuditLog {
+  id              String   @id @default(uuid())
+  usuarioId       String
+  usuarioNome     String
+  tabela          String
+  registroId      String
+  operacao        TipoOperacao
+  descricao       String
+  valorAnterior   Json?
+  valorNovo       Json?
+  createdAt       DateTime @default(now())
+
+  // Relacionamentos
+  usuario  Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}
+
+// Escolhas predeterminadas
+enum TipoOperacao {
+  CREATE
+  UPDATE
+  DELETE
+  INACTIVATE
+  REACTIVATE
+}
