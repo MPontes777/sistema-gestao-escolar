@@ -1,24 +1,65 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/Login/Login';
+import DashboardAdmin from './pages/DashboardAdmin/DashboardAdmin';
+import { isAuthenticated, getUser } from './services/api';
+
+// Protege rotas privadas
+const PrivateRoute = ({ children }) => {
+  return isAuthenticated() ? children : <Navigate to="/login" />;
+};
+
+// Redireciona usuário autenticado
+const PublicRoute = ({ children }) => {
+  if (isAuthenticated()) {
+    const user = getUser();
+    const perfil = user?.perfil?.toLowerCase();
+    if (perfil === 'admin') {
+      return <Navigate to="/dashboard-admin" />;
+    } else if (perfil === 'professor') {
+      return <Navigate to="/dashboard-admin" />;
+    }
+  }
+  return children;
+};
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        {/* Rota pública - Login */}
+        <Route 
+          path="/login" 
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          } 
+        />
+
+        {/* Rota privada - Dashboard Admin */}
+        <Route 
+          path="/dashboard-admin" 
+          element={
+            <PrivateRoute>
+              <DashboardAdmin />
+            </PrivateRoute>
+          } 
+        />
+
+        {/* Rota raiz - redireciona para login */}
+        <Route 
+          path="/" 
+          element={<Navigate to="/login" />} 
+        />
+
+        {/* Rota 404 - redireciona para login */}
+        <Route 
+          path="*" 
+          element={<Navigate to="/login" />} 
+        />
+      </Routes>
+    </Router>
   );
 }
 

@@ -117,6 +117,7 @@ async function main() {
             senha: senhaHash,
             perfil: 'PROFESSOR',
             ativo: false,
+            inativadoAt: new Date('2025-12-16'),
         },
     });
     console.log('Professor inativo criado');
