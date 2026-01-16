@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login/Login';
+import Layout from './components/Layout/Layout';
 import DashboardAdmin from './pages/DashboardAdmin/DashboardAdmin';
 import { isAuthenticated, getUser } from './services/api';
 
@@ -42,7 +43,9 @@ function App() {
           path="/dashboard-admin" 
           element={
             <PrivateRoute>
-              <DashboardAdmin />
+              <Layout>
+                <DashboardAdmin />
+              </Layout>
             </PrivateRoute>
           } 
         />

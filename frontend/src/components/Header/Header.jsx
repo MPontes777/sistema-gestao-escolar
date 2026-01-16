@@ -5,7 +5,7 @@ import './Header.css';
 const Header = () => {
     const navigate = useNavigate();
 
-    // Utiliza dados do usuário do localStorage
+    // Armazena dados do usuário do localStorage
     const user = JSON.parse(localStorage.getItem('user'));
 
     // Logout
