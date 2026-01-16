@@ -33,8 +33,8 @@ model Usuario {
 
 // Escolhas predeterminadas
 enum Perfil {
-  ADMIN
-  PROFESSOR
+  admin
+  professor
 }
 
 // Tabela Disciplina

@@ -72,7 +72,7 @@ async function main() {
             nome: 'Administrador',
             email: 'admin@escola.com',
             senha: senhaHash,
-            perfil: 'ADMIN',
+            perfil: 'admin',
             ativo: true,
         },
     });
@@ -84,7 +84,7 @@ async function main() {
             nome: 'Mateus Pontes',
             email: 'mateus.pontes@escola.com',
             senha: senhaHash,
-            perfil: 'PROFESSOR',
+            perfil: 'professor',
             ativo: true,
         },
     });
@@ -94,7 +94,7 @@ async function main() {
             nome: 'Ellen Melo',
             email: 'ellen.melo@escola.com',
             senha: senhaHash,
-            perfil: 'PROFESSOR',
+            perfil: 'professor',
             ativo: true,
         },
     });
@@ -103,8 +103,8 @@ async function main() {
         data: {
             nome: 'Fagner Januario',
             email: 'fagner.januario@escola.com',
-            senha: senhaHash,
-            perfil: 'PROFESSOR',
+            senha: senhaHash,   
+            perfil: 'professor',
             ativo: true,
         },
     });
@@ -115,7 +115,7 @@ async function main() {
             nome: 'Pedro Coelho',
             email: 'pedro.coelho@escola.com',
             senha: senhaHash,
-            perfil: 'PROFESSOR',
+            perfil: 'professor',
             ativo: false,
             inativadoAt: new Date('2025-12-16'),
         },
