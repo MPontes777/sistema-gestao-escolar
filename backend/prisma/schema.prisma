@@ -3,30 +3,29 @@
 
 generator client {
   provider = "prisma-client-js"
-  //output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = env("DATABASE_URL")
 }
 
 // Tabela Usuario
 model Usuario {
-  id         String   @id @default(uuid())
-  nome       String
-  email      String   @unique
-  senha      String
-  perfil     Perfil
-  ativo      Boolean  @default(true)
-  createdAt  DateTime @default(now())
+  id            String   @id @default(uuid())
+  nome          String
+  email         String   @unique
+  senha         String
+  perfil        Perfil
+  ativo         Boolean  @default(true)
+  createdAt     DateTime @default(now())
   inativadoAt   DateTime?
-  updatedAt  DateTime @updatedAt
+  updatedAt     DateTime @updatedAt
 
   // Relacionamentos
-  disciplinas     ProfessorDisciplina[]
-  planejamentos   Planejamento[]
-  auditLogs       AuditLog[]
+  professorTurmas  ProfessorTurma[]
+  planejamentos    Planejamento[]
+  auditLogs        AuditLog[]
 
   @@map("usuarios")
 }
@@ -39,35 +38,37 @@ enum Perfil {
 
 // Tabela Disciplina
 model Disciplina {
-  id          String   @id @default(uuid())
-  nome        String   @unique
-  ativo       Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  id            String   @id @default(uuid())
+  nome          String   @unique
+  ativo         Boolean  @default(true)
+  createdAt     DateTime @default(now())
   inativadoAt   DateTime?
-  updatedAt   DateTime @updatedAt
+  updatedAt     DateTime @updatedAt
 
   // Relacionamentos
-  professores    ProfessorDisciplina[]
-  notas          Nota[]
-  planejamentos  Planejamento[]
+  professorTurmas  ProfessorTurma[]
+  notas            Nota[]
+  planejamentos    Planejamento[]
 
   @@map("disciplinas")
 }
 
-// Tabela Intermediária Professor Disciplinas
-model ProfessorDisciplina {
+// Tabela de Relacionamento Professor-Turma-Disciplina
+model ProfessorTurma {
   id            String   @id @default(uuid())
   professorId   String
+  turmaId       String
   disciplinaId  String
   createdAt     DateTime @default(now())
 
-  // Relacionamentos (onDelete: Cascade, Campo deletado, relacionamento deletado, garante integridade)
+  // Relacionamentos (se o professor for deletado, o relacionamento também é deletado)
   professor     Usuario     @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  turma         Turma       @relation(fields: [turmaId], references: [id], onDelete: Cascade)
   disciplina    Disciplina  @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
 
-  // Professor vinculado apenas uma vez a uma mesma disciplina
-  @@unique([professorId, disciplinaId])
-  @@map("professor_disciplinas")
+  // Um professor não pode lecionar a mesma disciplina na mesma turma duas vezes
+  @@unique([professorId, turmaId, disciplinaId])
+  @@map("professor_turmas")
 }
 
 // Tabela Aluno
@@ -87,7 +88,7 @@ model Aluno {
   inativadoAt     DateTime?
   updatedAt       DateTime  @updatedAt
 
-  // Relacionamentos (onDelete: SetNull, turma deletada, aluno mantido)
+  // Relacionamentos (Se a turma for deletada, o aluno não deixa de existir)
   turma  Turma?  @relation(fields: [turmaId], references: [id], onDelete: SetNull)
   notas  Nota[]
 
@@ -96,20 +97,21 @@ model Aluno {
 
 // Tabela Turma
 model Turma {
-  id            String   @id @default(uuid())
-  anoSerie      String
-  letra         String
-  anoLetivo     Int
-  periodo       Periodo
-  nomeCompleto  String
-  ativo         Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  inativadoAt   DateTime?
-  updatedAt     DateTime @updatedAt
+  id              String   @id @default(uuid())
+  anoSerie        String
+  letra           String
+  anoLetivo       Int
+  periodo         Periodo
+  nomeCompleto    String
+  ativo           Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  inativadoAt     DateTime?
+  updatedAt       DateTime @updatedAt
 
   // Relacionamentos
-  alunos         Aluno[]
-  planejamentos  Planejamento[]
+  alunos           Aluno[]
+  professorTurmas  ProfessorTurma[]
+  planejamentos    Planejamento[]
 
   // Não existem duas turmas iguais
   @@unique([anoSerie, letra, periodo, anoLetivo])
@@ -123,7 +125,7 @@ enum Periodo {
   NOTURNO
 }
 
-// Tabelas Nota
+// Tabela Nota
 model Nota {
   id            String   @id @default(uuid())
   alunoId       String
@@ -160,7 +162,7 @@ model Planejamento {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-// Relacionamentos
+  // Relacionamentos
   professor   Usuario     @relation(fields: [professorId], references: [id], onDelete: Cascade)
   turma       Turma       @relation(fields: [turmaId], references: [id], onDelete: Cascade)
   disciplina  Disciplina  @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
@@ -168,7 +170,7 @@ model Planejamento {
   @@map("planejamentos")
 }
 
-//tabela auditoria log
+// Tabela auditoria log
 model AuditLog {
   id              String   @id @default(uuid())
   usuarioId       String

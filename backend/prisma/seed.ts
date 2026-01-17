@@ -6,43 +6,43 @@ const prisma = new PrismaClient();
 async function main() {
     console.log('Iniciando seed\n');
 
-    // Limpar dados existentes
+    // Limpa dados existentes
     console.log('Limpando dados existentes');
     await prisma.auditLog.deleteMany();
     await prisma.nota.deleteMany();
     await prisma.planejamento.deleteMany();
-    await prisma.professorDisciplina.deleteMany();
+    await prisma.professorTurma.deleteMany();
     await prisma.aluno.deleteMany();
     await prisma.turma.deleteMany();
     await prisma.disciplina.deleteMany();
     await prisma.usuario.deleteMany();
     console.log('Dados limpos com sucesso\n');
 
-    //Popular tabela de disciplina
+    //Popula tabela de disciplina
     console.log('Populando tabela de disciplinas');
 
     const matematica = await prisma.disciplina.create({
         data: {
-        nome: 'Matemática',
-        ativo: true,
+            nome: 'Matemática',
+            ativo: true,
         },
     });
     const portugues = await prisma.disciplina.create({
         data: {
-        nome: 'Português',
-        ativo: true,
+            nome: 'Português',
+            ativo: true,
         },
     });
     const historia = await prisma.disciplina.create({
         data: {
-        nome: 'História',
-        ativo: true,
+            nome: 'História',
+            ativo: true,
         },
     });
     const geografia = await prisma.disciplina.create({
         data: {
-        nome: 'Geografia',
-        ativo: true,
+            nome: 'Geografia',
+            ativo: true,
         },
     });
     const ciencias = await prisma.disciplina.create({
@@ -60,13 +60,13 @@ async function main() {
 
     console.log('Tabela de disciplinas populada com sucesso\n');
 
-    //Popular tabela de disciplinas
+    //Popula tabela de disciplinas
     console.log('Populando tabela de usuarios');
 
     // Senha única e criptografada para todos os usuários no MVP
     const senhaHash = await bcrypt.hash('senha123', 10);
 
-    //Criar Admin
+    //Cria Admin
     const admin = await prisma.usuario.create({
         data: {
             nome: 'Administrador',
@@ -78,7 +78,7 @@ async function main() {
     });
     console.log('Administrador criado');
 
-    //Criar Professores
+    //Cria Professores
     const profMatematica = await prisma.usuario.create({
         data: {
             nome: 'Mateus Pontes',
@@ -109,7 +109,7 @@ async function main() {
         },
     });
     console.log('Professor de ciencias criado');
-    //Testar usuario inativo
+    //Testa usuario inativo
     const profInativo = await prisma.usuario.create({
         data: {
             nome: 'Pedro Coelho',
@@ -123,40 +123,7 @@ async function main() {
     console.log('Professor inativo criado');
     console.log('Tabela de usuarios populada com sucesso\n');
 
-    //Vincular professores às disciplinas
-    console.log('Vinculando professores às disciplinas');
-
-    await prisma.professorDisciplina.create({
-        data: {
-            professorId: profMatematica.id,
-            disciplinaId: matematica.id,
-        },
-    });
-    console.log('Professor de matematica vinculado');
-        await prisma.professorDisciplina.create({
-        data: {
-            professorId: profPortugues.id,
-            disciplinaId: portugues.id,
-        },
-    });
-    console.log('Professor de portugues vinculado');
-        await prisma.professorDisciplina.create({
-        data: {
-            professorId: profCiencias.id,
-            disciplinaId: ciencias.id,
-        },
-    });
-    console.log('Professor de ciencias vinculado');
-        await prisma.professorDisciplina.create({
-        data: {
-            professorId: profInativo.id,
-            disciplinaId: portugues.id,
-        },
-    });
-    console.log('Professor inativo vinculado');
-    console.log('Vinculos criados com sucesso\n');
-
-    //Popular tabela de turmas
+    //Popula tabela de turmas
     console.log('Populando tabela de turmas');
 
     const turma8A2025 = await prisma.turma.create({
@@ -206,7 +173,68 @@ async function main() {
     console.log('9º A (2024) criada');
     console.log('Tabela de turmas populada com sucesso!\n');
 
-    //Popular tabela de alunos
+    //Vincula professores às turmas e disciplinas
+    console.log('Vinculando professores às turmas e disciplinas');
+
+    await prisma.professorTurma.create({
+        data: {
+            professorId: profMatematica.id,
+            turmaId: turma8A2025.id,
+            disciplinaId: matematica.id,
+        },
+    });
+    console.log('Professor de matematica vinculado a 8º A (2025)');
+    await prisma.professorTurma.create({
+        data: {
+            professorId: profMatematica.id,
+            turmaId: turma9A2025.id,
+            disciplinaId: matematica.id,
+        },
+    });
+    console.log('Professor de matematica vinculado a 9º A (2025)');
+        await prisma.professorTurma.create({
+        data: {
+            professorId: profPortugues.id,
+            turmaId: turma8A2025.id,
+            disciplinaId: portugues.id,
+        },
+    });
+    console.log('Professor de portugues vinculado a 8º A (2025)');
+        await prisma.professorTurma.create({
+        data: {
+            professorId: profPortugues.id,
+            turmaId: turma8B2025.id,
+            disciplinaId: portugues.id,
+        },
+    });
+    console.log('Professor de portugues vinculado a 8º B (2025)');
+        await prisma.professorTurma.create({
+        data: {
+            professorId: profPortugues.id,
+            turmaId: turma9A2025.id,
+            disciplinaId: portugues.id,
+        },
+    });
+    console.log('Professor de portugues vinculado a 9º A (2025)');
+        await prisma.professorTurma.create({
+        data: {
+            professorId: profCiencias.id,
+            turmaId: turma9A2025.id,
+            disciplinaId: ciencias.id,
+        },
+    });
+    console.log('Professor de ciencias vinculado a 9º A (2025)');
+        await prisma.professorTurma.create({
+        data: {
+            professorId: profInativo.id,
+            turmaId: turma9A2024.id,
+            disciplinaId: portugues.id,
+        },
+    });
+    console.log('Professor inativo vinculado a 9º A (2024)');
+    console.log('Vinculos criados com sucesso\n');
+
+    //Popula tabela de alunos
     console.log('Populando tabela de alunos');
 
     // Alunos da Turma 8º A (2025)
@@ -387,7 +415,7 @@ async function main() {
 
     console.log('Tabela de alunos populada com sucesso\n');
 
-    //Popular tabela de notas
+    //Popula tabela de notas
     console.log('Populando tabela de notas');
 
     await prisma.nota.create({
@@ -455,7 +483,7 @@ async function main() {
     });
     console.log('Tabela de notas populada com sucesso\n');
 
-    //Popular tabela de planejamentos
+    //Popula tabela de planejamentos
     console.log('Populando tabela de planejamentos');
 
     await prisma.planejamento.create({
@@ -471,7 +499,7 @@ async function main() {
     await prisma.planejamento.create({
         data: {
             professorId: profMatematica.id,
-            turmaId: turma8B2025.id,
+            turmaId: turma8A2025.id,
             disciplinaId: matematica.id,
             titulo: 'Equações do 1º Grau',
             data: new Date('2025-01-19'),
@@ -503,7 +531,7 @@ async function main() {
 }
 
 
-//Rodar a função
+//Roda a função
 main()
 .catch((e) => {
     console.error('Erro ao executar seed:', e);
