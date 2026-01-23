@@ -100,7 +100,7 @@ const Login = () => {
                 if (perfil === 'admin') {
                     navigate('/dashboard-admin');
                 } else if (perfil === 'professor') {
-                    navigate('/dashboard-admin');
+                    navigate('/dashboard-professor');
                 // Alterar após fase de MVP
                 } else {
                     navigate('/dashboard');

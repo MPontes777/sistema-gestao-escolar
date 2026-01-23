@@ -2,7 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login/Login';
 import Layout from './components/Layout/Layout';
-import DashboardAdmin from './pages/DashboardAdmin/DashboardAdmin';
+import DashboardAdmin from './pages/Dashboard/DashboardAdmin';
+import DashboardProfessor from './pages/Dashboard/DashboardProfessor';
 import { isAuthenticated, getUser } from './services/api';
 
 // Protege rotas privadas
@@ -18,7 +19,7 @@ const PublicRoute = ({ children }) => {
     if (perfil === 'admin') {
       return <Navigate to="/dashboard-admin" />;
     } else if (perfil === 'professor') {
-      return <Navigate to="/dashboard-admin" />;
+      return <Navigate to="/dashboard-professor" />;
     }
   }
   return children;
@@ -39,7 +40,7 @@ function App() {
         />
 
         {/* Rota privada - Dashboard Admin */}
-        <Route 
+        <Route
           path="/dashboard-admin" 
           element={
             <PrivateRoute>
@@ -47,8 +48,20 @@ function App() {
                 <DashboardAdmin />
               </Layout>
             </PrivateRoute>
-          } 
+          }
         />
+
+        {/* Rota privada - Dashboard Professor */}
+        <Route 
+          path="/dashboard-professor"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <DashboardProfessor />
+              </Layout>
+            </PrivateRoute>
+          }
+        />        
 
         {/* Rota raiz - redireciona para login */}
         <Route 

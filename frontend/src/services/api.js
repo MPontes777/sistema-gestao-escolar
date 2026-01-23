@@ -27,7 +27,9 @@ api.interceptors.response.use(
     // Se a resposta for sucesso, retorna ela
     (response) => response,
     (error) => {
-        if (error.response?.status === 401 && localStorage.getItem('token')) {
+        // Se der erro 401 ou não estiver direcionando
+        if ((error.response?.status === 401 || error.response?.status === 403) && localStorage.getItem('token')) {
+            // Limpa Local Storage e redireciona
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = '/login';
