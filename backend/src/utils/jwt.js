@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET //|| 'jwtsecretkey2025'; // Chave secreta
+const JWT_SECRET = process.env.JWT_SECRET
 const JWT_EXPIRES_IN = '8h'; // Token expira em 8 horas
 
 // Gera um token JWT para o usuário

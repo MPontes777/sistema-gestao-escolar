@@ -28,7 +28,7 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         // Se der erro 401 ou não estiver direcionando
-        if ((error.response?.status === 401 || error.response?.status === 403) && localStorage.getItem('token')) {
+        if (error.response?.status === 401 || error.response?.status === 403) {
             // Limpa Local Storage e redireciona
             localStorage.removeItem('token');
             localStorage.removeItem('user');

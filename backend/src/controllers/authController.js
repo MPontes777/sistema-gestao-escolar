@@ -12,7 +12,7 @@ async function login(req, res) {
         // Validações básicas
         if (!email || !senha) {
             return res.status(400).json({
-                mensage: 'E-mail e senha são obrigatórios'
+                mensagem: 'E-mail e senha são obrigatórios'
             });
         }
 
@@ -24,14 +24,14 @@ async function login(req, res) {
         // Usuário não existe
         if (!usuario) {
             return res.status(401).json({
-                mensage: 'Credenciais inválidas'
+                mensagem: 'Credenciais inválidas'
             });
         }
         
         // Usuário inativo
         if (usuario.inativadoAt) {
             return res.status(401).json({
-                mensage: 'Credenciais inválidas'
+                mensagem: 'Credenciais inválidas'
             });
         }
 
@@ -39,7 +39,7 @@ async function login(req, res) {
         const senhaValida = await bcrypt.compare(senha, usuario.senha);
         if (!senhaValida) {
             return res.status(401).json({
-                mensage: 'Credenciais inválidas'
+                mensagem: 'Credenciais inválidas'
             });
         }
 
