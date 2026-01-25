@@ -22,6 +22,9 @@ const listaAlunos = async (req, res) => {
 
         switch (perfil) {
             case 'admin': // Admin acessa todos os alunos
+                if (turmaId) {
+                    where.turmaId = turmaId;
+                }
             break;
 
             case 'professor': // Professor acessa apenas alunos das turmas que ele está atribuído
@@ -52,13 +55,25 @@ const listaAlunos = async (req, res) => {
                         }
                     });
                 }
-                where.turmaId = { in: turmaIdsProfessor };
+                
+                // Filtra apenas turmas que o professor tem acesso (se filtro é aplicado e professor não tem acesso, nega permissão) 
+                if (turmaId) {
+                    if (!turmaIdsProfessor.includes(turmaId)) {
+                        return res.status(403).json ({
+                            sucesso: false,
+                            mensagem: 'Você não tem permissão para visualizar essa turma'
+                        });
+                    }
+                    where.turmaId = turmaId;
+                } else {
+                    where.turmaId = { in: turmaIdsProfessor };
+                }
             break;
 
             default: // Outro perfil
                 return res.status(403).json({
                     sucesso: false,
-                    mensagem: 'Não autorizado'
+                    mensagem: 'Você não tem permissão para visualizar essa turma'
                 });
         }
 
@@ -67,11 +82,6 @@ const listaAlunos = async (req, res) => {
             where.inativadoAt = null;
         } else if (status === 'inativo') {
             where.inativadoAt = { not: null };
-        }
-
-        // Filtro por turma
-        if (turmaId) {
-            where.turmaId = turmaId;
         }
 
         // Filtro por nome
