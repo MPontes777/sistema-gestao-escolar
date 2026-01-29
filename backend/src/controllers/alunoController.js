@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { cpf: cpfValidator } = require('cpf-cnpj-validator');
 
 // Lista todos os alunos
 const listaAlunos = async (req, res) => {
@@ -240,7 +241,214 @@ const buscaAlunoId = async (req, res) => {
     }
 };
 
+// Gera Matrícula
+async function geraMatricula() {
+    const anoAtual = new Date().getFullYear();
+
+    // Busca se já existe alguma matrícula no ano vigente
+    const ultimaMatricula = await prisma.aluno.findFirst({
+        where: {
+            matricula: {
+                startsWith: anoAtual.toString()
+            }
+        },
+        orderBy: { createdAt: 'desc' },
+        select: { matricula: true }
+    });
+
+    let novaMatricula = 1;
+
+    // Caso exista matrícula, adiciona 1 número, senão começa a sequência a partir do 1 
+    if(ultimaMatricula && ultimaMatricula.matricula) {
+        const sequencia = ultimaMatricula.matricula.slice(-3);
+        novaMatricula = parseInt(sequencia) + 1
+    }
+    // Formata número para o formato "Ano + 000"
+    novaMatricula = novaMatricula.toString().padStart(3, '0');
+    return `${anoAtual}${novaMatricula}`;
+};
+
+// Registra na tabela de logs
+async function criaLog(usuarioId, usuarioNome, tabela, registroId, operacao, descricao, valorAnterior = null, valorNovo = null) {
+    try {
+        await prisma.auditLog.create({
+            data: {
+                usuarioId,
+                usuarioNome,
+                tabela,
+                registroId,
+                operacao,
+                descricao,
+                valorAnterior,
+                valorNovo
+            }
+        });
+        console.log(`Log ${operacao} registrado em ${tabela}`);
+    } catch (error) {
+        console.log('Erro ao registrar log', error);
+    }
+};
+
+// Cria novo aluno
+const criaAluno = async (req, res) => {
+    try {
+        // Extrai dados do body
+        const {
+            nome,
+            email,
+            cpf,
+            dataNascimento,
+            telefone,
+            nomeResponsavel,
+            endereco,
+            turmaId
+        } = req.body;
+
+        // Valida campos obrigatórios
+        if (!nome || !cpf || !dataNascimento || !telefone || !nomeResponsavel) {
+            return res.status(400).json({
+                mensagem: 'Campos obrigatórios: Nome, CPF, Data de Nascimento, Nome do Responsável e Telefone do Responsável'
+            });
+        }
+
+        // Valida CPF (Não utilizar no MVP)
+        /*if (!cpfValidator.isValid(cpf)) {
+            return res.status(400).json({
+                mensagem: 'CPF Inválido'
+            });
+        }*/
+
+        // Remove pontuação do CPF
+        const cpfNumero = cpf.replace(/\D/g, '');
+
+        // Valida se CPF possui 11 dígitos (Utilizar apenas no MVP)
+        if (cpfNumero.length !== 11) {
+            return res.status(400).json({
+                mensagem: 'CPF deve conter 11 dígitos'
+            });
+        }
+
+        // Valida data de nascimento
+        const hoje = new Date();
+        const dataNasc = new Date(dataNascimento);
+
+        // Verifica se a data é válida
+        if (isNaN(dataNasc.getTime())) {
+            return res.status(400).json({
+                mensagem: 'Data de nascimento inválida'
+            });
+        }
+
+        // Verifica se a data não é futura
+        if (dataNasc > hoje) {
+            return res.status(400).json({
+                mensagem: 'Data de nascimento não pode ser uma data futura'
+            });
+        }
+
+        // Verifica se CPF já existe
+        const cpfExiste = await prisma.aluno.findUnique({
+            where: {
+                cpf: cpfNumero
+            }
+        });
+
+        if (cpfExiste) {
+            return res.status(400).json({
+                mensagem: 'Este CPF já está cadastrado'
+            });
+        }
+
+        // Valida se turma existe e está ativa (caso aluno esteja vinculado)
+        if (turmaId) {
+            const turmaExiste = await prisma.turma.findUnique({
+                where: { id: turmaId }
+            });
+
+            if (!turmaExiste) {
+                return res.status(400).json({
+                    mensagem: 'Turma não encontrada'
+                });
+            }
+
+            if (!turmaExiste.ativo) {
+                return res.status(400).json({
+                    mensagem: 'Não é possível matricular alunos em uma turma inativa'
+                });
+            }
+        }
+
+        // Cria aluno no banco de dados
+        const matricula = await geraMatricula();
+        
+        // Garante que em caso de erro, gere um rollback e não registre nem o aluno nem o log
+        const garantia = await prisma.$transaction(async (tx) => {
+            const novoAluno = await tx.aluno.create({
+                data: {
+                    matricula,
+                    nome,
+                    email: email || null,
+                    cpf: cpfNumero,
+                    dataNascimento: new Date(dataNascimento),
+                    telefone,
+                    nomeResponsavel,
+                    endereco: endereco || null,
+                    turmaId: turmaId || null,
+                    ativo: true
+                },
+                include: {
+                    turma: {
+                        select: {
+                            id: true,
+                            nomeCompleto: true
+                        }
+                    }
+                }
+            });
+
+            // Registra log de criação de aluno
+            await tx.auditLog.create({
+                data: {
+                    usuarioId: req.user.id,
+                    usuarioNome: req.user.nome,
+                    tabela: 'alunos',
+                    registroId: novoAluno.id,
+                    operacao: 'CREATE',
+                    descricao: `Aluno [${novoAluno.matricula}] ${novoAluno.nome} foi criado por ${req.user.nome}`, // Descrição
+                    valorAnterior: null,
+                    valorNovo: {
+                        matricula: novoAluno.matricula,
+                        nome: novoAluno.nome,
+                        cpf: novoAluno.cpf,
+                        email: novoAluno.email,
+                        dataNascimento: novoAluno.dataNascimento,
+                        telefone: novoAluno.telefone,
+                        nomeResponsavel: novoAluno.nomeResponsavel,
+                        endereco: novoAluno.endereco,
+                        turmaId: novoAluno.turmaId
+                    }
+                }
+            });
+
+            return novoAluno;
+        });
+
+        return res.status(201).json({
+            mensagem: 'Aluno criado',
+            aluno: garantia
+        });
+
+    } catch (error) {
+        console.error('Erro ao criar aluno:', error);
+        return res.status(500).json({
+            mensagem: 'Erro ao criar aluno',
+            erro: error.message
+        });
+    }
+};
+
 module.exports = {
     listaAlunos,
-    buscaAlunoId
+    buscaAlunoId,
+    criaAluno
 };

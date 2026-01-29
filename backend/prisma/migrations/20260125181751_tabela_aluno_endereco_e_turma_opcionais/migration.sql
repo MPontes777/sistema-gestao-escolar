@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "alunos" ALTER COLUMN "endereco" DROP NOT NULL,
+ALTER COLUMN "turmaId" DROP NOT NULL;

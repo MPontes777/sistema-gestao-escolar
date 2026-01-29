@@ -25,7 +25,6 @@ model Usuario {
   // Relacionamentos
   professorTurmas  ProfessorTurma[]
   planejamentos    Planejamento[]
-  auditLogs        AuditLog[]
 
   @@map("usuarios")
 }
@@ -78,11 +77,11 @@ model Aluno {
   nome            String
   cpf             String    @unique
   dataNascimento  DateTime
-  email           String
+  email           String?
   telefone        String
   nomeResponsavel String
-  endereco        String
-  turmaId         String
+  endereco        String? // Pode ser cadastrado depois
+  turmaId         String? // Pode ser cadastrado sem turma
   ativo           Boolean   @default(true)
   createdAt       DateTime  @default(now())
   inativadoAt     DateTime?
@@ -182,9 +181,6 @@ model AuditLog {
   valorAnterior   Json?
   valorNovo       Json?
   createdAt       DateTime @default(now())
-
-  // Relacionamentos
-  usuario  Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   @@map("audit_logs")
 }
