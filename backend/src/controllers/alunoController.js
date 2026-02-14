@@ -5,7 +5,7 @@ const {
     validaDataNascimento,
     validaCPFDuplicado,
     validaTurma,
-    geraMatricula
+    geraMatricula,
 } = require('../utils/validacoes');
 
 // Lista todos os alunos
@@ -18,7 +18,7 @@ const listaAlunos = async (req, res) => {
             ordenarPor = 'nome', // Ordenação
             ordem = 'asc',
             limit = 10, // Quantidade por página
-            offset = 0 // Pula uma certa quantidade de registros
+            offset = 0, // Pula uma certa quantidade de registros
         } = req.query;
 
         // Filtro
@@ -37,11 +37,13 @@ const listaAlunos = async (req, res) => {
             case 'professor': // Professor acessa apenas alunos das turmas que ele está atribuído
                 const turmasProfessor = await prisma.professorTurma.findMany({
                     where: { professorId: userId },
-                    select: { turmaId: true }
+                    select: { turmaId: true },
                 });
 
                 // Verifica se professor está atribuído em alguma turma
-                const turmaIdsProfessor = turmasProfessor.map(pt => pt.turmaId);
+                const turmaIdsProfessor = turmasProfessor.map(
+                    (pt) => pt.turmaId,
+                );
 
                 if (turmaIdsProfessor.length === 0) {
                     return res.status(200).json({
@@ -52,9 +54,9 @@ const listaAlunos = async (req, res) => {
                             paginacao: {
                                 total: 0,
                                 offset: 0,
-                                totalPaginas: 0
-                            }
-                        }
+                                totalPaginas: 0,
+                            },
+                        },
                     });
                 }
 
@@ -63,7 +65,8 @@ const listaAlunos = async (req, res) => {
                     if (!turmaIdsProfessor.includes(turmaId)) {
                         return res.status(403).json({
                             sucesso: false,
-                            mensagem: 'Você não tem permissão para visualizar essa turma'
+                            mensagem:
+                                'Você não tem permissão para visualizar essa turma',
                         });
                     }
                     where.turmaId = turmaId;
@@ -75,7 +78,8 @@ const listaAlunos = async (req, res) => {
             default: // Outro perfil
                 return res.status(403).json({
                     sucesso: false,
-                    mensagem: 'Você não tem permissão para visualizar essa turma'
+                    mensagem:
+                        'Você não tem permissão para visualizar essa turma',
                 });
         }
 
@@ -90,13 +94,22 @@ const listaAlunos = async (req, res) => {
         if (nome) {
             where.nome = {
                 contains: nome, // Apenas uma parte do nome
-                mode: 'insensitive' // Independente se está em maiúsculo ou minúsculo
+                mode: 'insensitive', // Independente se está em maiúsculo ou minúsculo
             };
         }
 
         // Ordenação
-        const orderBy = {};
-        orderBy[ordenarPor] = ordem;
+        let orderBy = {};
+
+        if (ordenarPor === 'ativo') {
+            orderBy.ativo = ordem === 'asc' ? 'desc' : 'asc';
+        } else if (ordenarPor === 'turmaId') {
+            orderBy.turma = {
+                nomeCompleto: ordem,
+            };
+        } else {
+            orderBy[ordenarPor] = ordem;
+        }
 
         // Consulta alunos filtrados
         const alunos = await prisma.aluno.findMany({
@@ -109,10 +122,10 @@ const listaAlunos = async (req, res) => {
                     select: {
                         id: true,
                         nomeCompleto: true,
-                        periodo: true
-                    }
-                }
-            }
+                        periodo: true,
+                    },
+                },
+            },
         });
 
         // Conta total de alunos para paginação
@@ -127,17 +140,16 @@ const listaAlunos = async (req, res) => {
                     total,
                     limit: parseInt(limit),
                     offset: parseInt(offset),
-                    totalPaginas: Math.ceil(total / parseInt(limit))
-                }
-            }
+                    totalPaginas: Math.ceil(total / parseInt(limit)),
+                },
+            },
         });
-
     } catch (error) {
         console.error('Erro ao listar alunos:', error);
         res.status(500).json({
             sucesso: false,
             mensagem: 'Erro ao listar alunos',
-            erro: error.message
+            erro: error.message,
         });
     }
 };
@@ -154,8 +166,8 @@ const buscaAlunoId = async (req, res) => {
                     select: {
                         id: true,
                         nomeCompleto: true,
-                        periodo: true
-                    }
+                        periodo: true,
+                    },
                 },
                 notas: {
                     select: {
@@ -169,18 +181,18 @@ const buscaAlunoId = async (req, res) => {
                         disciplina: {
                             select: {
                                 id: true,
-                                nome: true
-                            }
-                        }
-                    }
-                }
-            }
+                                nome: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
 
         if (!aluno) {
             return res.status(404).json({
                 sucesso: false,
-                mensagem: 'Aluno não encontrado'
+                mensagem: 'Aluno não encontrado',
             });
         }
 
@@ -195,49 +207,55 @@ const buscaAlunoId = async (req, res) => {
                 const alunoProfessor = await prisma.professorTurma.findFirst({
                     where: {
                         professorId: userId,
-                        turmaId: aluno.turmaId
-                    }
+                        turmaId: aluno.turmaId,
+                    },
                 });
 
                 if (!alunoProfessor) {
                     return res.status(403).json({
                         sucesso: false,
-                        mensagem: 'Você não tem permissão para visualizar este aluno'
+                        mensagem:
+                            'Você não tem permissão para visualizar este aluno',
                     });
                 }
 
                 // Professor acessa apenas notas das disciplinas que ele está atribuído
-                const disciplinasProfessor = await prisma.professorTurma.findMany({
-                    where: {
-                        professorId: userId,
-                        turmaId: aluno.turmaId
-                    },
-                    select: { disciplinaId: true }
-                });
+                const disciplinasProfessor =
+                    await prisma.professorTurma.findMany({
+                        where: {
+                            professorId: userId,
+                            turmaId: aluno.turmaId,
+                        },
+                        select: { disciplinaId: true },
+                    });
 
-                const disciplinaIdsProfessor = disciplinasProfessor.map(pd => pd.disciplinaId);
-                aluno.notas = aluno.notas.filter(nota => disciplinaIdsProfessor.includes(nota.disciplina.id));
+                const disciplinaIdsProfessor = disciplinasProfessor.map(
+                    (pd) => pd.disciplinaId,
+                );
+                aluno.notas = aluno.notas.filter((nota) =>
+                    disciplinaIdsProfessor.includes(nota.disciplina.id),
+                );
                 break;
 
             default:
                 return res.status(403).json({
                     sucesso: false,
-                    mensagem: 'Você não tem permissão para visualizar este aluno'
+                    mensagem:
+                        'Você não tem permissão para visualizar este aluno',
                 });
         }
 
         res.status(200).json({
             sucesso: true,
             mensagem: 'Aluno encontrado',
-            dados: aluno
+            dados: aluno,
         });
-
     } catch (error) {
         console.error('Erro ao buscar aluno:', error);
         res.status(500).json({
             sucesso: false,
             mensagem: 'Erro ao buscar aluno',
-            erro: error.message
+            erro: error.message,
         });
     }
 };
@@ -254,13 +272,14 @@ const criaAluno = async (req, res) => {
             telefone,
             nomeResponsavel,
             endereco,
-            turmaId
+            turmaId,
         } = req.body;
 
         // Valida campos obrigatórios
         if (!nome || !cpf || !dataNascimento || !telefone || !nomeResponsavel) {
             return res.status(400).json({
-                mensagem: 'Campos obrigatórios: Nome, CPF, Data de Nascimento, Nome do Responsável e Telefone do Responsável'
+                mensagem:
+                    'Campos obrigatórios: Nome, CPF, Data de Nascimento, Nome do Responsável e Telefone do Responsável',
             });
         }
 
@@ -268,7 +287,7 @@ const criaAluno = async (req, res) => {
         const resultadoCPF = validaCPF(cpf);
         if (!resultadoCPF.valido) {
             return res.status(400).json({
-                mensagem: resultadoCPF.mensagem
+                mensagem: resultadoCPF.mensagem,
             });
         }
         const cpfNumero = resultadoCPF.cpfNumero;
@@ -277,7 +296,7 @@ const criaAluno = async (req, res) => {
         const resultadoDataNasc = validaDataNascimento(dataNascimento);
         if (!resultadoDataNasc.valido) {
             return res.status(400).json({
-                mensagem: resultadoDataNasc.mensagem
+                mensagem: resultadoDataNasc.mensagem,
             });
         }
         const dataNasc = resultadoDataNasc.dataNasc;
@@ -286,7 +305,7 @@ const criaAluno = async (req, res) => {
         const resultadoCPFDuplicado = await validaCPFDuplicado(cpfNumero);
         if (resultadoCPFDuplicado.existe) {
             return res.status(400).json({
-                mensagem: resultadoCPFDuplicado.mensagem
+                mensagem: resultadoCPFDuplicado.mensagem,
             });
         }
 
@@ -294,7 +313,7 @@ const criaAluno = async (req, res) => {
         const resultadoTurma = await validaTurma(turmaId);
         if (!resultadoTurma.valido) {
             return res.status(400).json({
-                mensagem: resultadoTurma.mensagem
+                mensagem: resultadoTurma.mensagem,
             });
         }
 
@@ -314,16 +333,16 @@ const criaAluno = async (req, res) => {
                     nomeResponsavel,
                     endereco: endereco || null,
                     turmaId: turmaId || null,
-                    ativo: true
+                    ativo: true,
                 },
                 include: {
                     turma: {
                         select: {
                             id: true,
-                            nomeCompleto: true
-                        }
-                    }
-                }
+                            nomeCompleto: true,
+                        },
+                    },
+                },
             });
 
             // Registra log de criação de aluno
@@ -345,9 +364,9 @@ const criaAluno = async (req, res) => {
                         telefone: novoAluno.telefone,
                         nomeResponsavel: novoAluno.nomeResponsavel,
                         endereco: novoAluno.endereco,
-                        turmaId: novoAluno.turmaId
-                    }
-                }
+                        turmaId: novoAluno.turmaId,
+                    },
+                },
             });
 
             return novoAluno;
@@ -355,14 +374,13 @@ const criaAluno = async (req, res) => {
 
         return res.status(201).json({
             mensagem: 'Aluno criado',
-            aluno: garantia
+            aluno: garantia,
         });
-
     } catch (error) {
         console.error('Erro ao criar aluno:', error);
         return res.status(500).json({
             mensagem: 'Erro ao criar aluno',
-            erro: error.message
+            erro: error.message,
         });
     }
 };
@@ -379,13 +397,14 @@ const editaAluno = async (req, res) => {
             telefone,
             nomeResponsavel,
             endereco,
-            turmaId
+            turmaId,
         } = req.body;
 
         // 1. Validar campos obrigatórios
         if (!nome || !cpf || !dataNascimento || !telefone || !nomeResponsavel) {
             return res.status(400).json({
-                mensagem: 'Campos obrigatórios: Nome, CPF, Data de Nascimento, Nome do Responsável e Telefone do Responsável'
+                mensagem:
+                    'Campos obrigatórios: Nome, CPF, Data de Nascimento, Nome do Responsável e Telefone do Responsável',
             });
         }
 
@@ -403,14 +422,14 @@ const editaAluno = async (req, res) => {
                 nomeResponsavel: true,
                 endereco: true,
                 turmaId: true,
-                ativo: true
-            }
+                ativo: true,
+            },
         });
 
         // Verifica se aluno existe
         if (!alunoAtual) {
             return res.status(404).json({
-                mensagem: 'Aluno não encontrado'
+                mensagem: 'Aluno não encontrado',
             });
         }
 
@@ -418,17 +437,19 @@ const editaAluno = async (req, res) => {
         if (!alunoAtual.ativo) {
             return res.status(400).json({
                 mensagem: 'Não é possível editar um aluno inativo',
-                sugestao: 'Reative o aluno antes de editá-lo'
+                sugestao: 'Reative o aluno antes de editá-lo',
             });
         }
 
-        // Verifica se foram feitas mudanças nos campos 
+        // Verifica se foram feitas mudanças nos campos
         const camposMudados = {};
         const dadosParaAtualizar = {};
 
         const resultadoCPF = validaCPF(cpf);
         if (!resultadoCPF.valido) {
-            return res.status(400).json({ mensagem: resultadoCPF.mensagem });
+            return res.status(400).json({
+                mensagem: resultadoCPF.mensagem,
+            });
         }
         const cpfNumero = resultadoCPF.cpfNumero;
 
@@ -436,13 +457,13 @@ const editaAluno = async (req, res) => {
             const resultadoDuplicado = await validaCPFDuplicado(cpfNumero, id);
             if (resultadoDuplicado.existe) {
                 return res.status(400).json({
-                    mensagem: resultadoDuplicado.mensagem
+                    mensagem: resultadoDuplicado.mensagem,
                 });
             }
 
             camposMudados.cpf = {
                 anterior: alunoAtual.cpf,
-                novo: cpfNumero
+                novo: cpfNumero,
             };
             dadosParaAtualizar.cpf = cpfNumero;
         }
@@ -450,17 +471,19 @@ const editaAluno = async (req, res) => {
         const resultadoDataNasc = validaDataNascimento(dataNascimento);
         if (!resultadoDataNasc.valido) {
             return res.status(400).json({
-                mensagem: resultadoDataNasc.mensagem
+                mensagem: resultadoDataNasc.mensagem,
             });
         }
         const dataNasc = resultadoDataNasc.dataNasc;
 
-        const dataAtualFormatada = alunoAtual.dataNascimento.toISOString().split('T')[0];
+        const dataAtualFormatada = alunoAtual.dataNascimento
+            .toISOString()
+            .split('T')[0];
         const dataNovaFormatada = dataNasc.toISOString().split('T')[0];
         if (dataNovaFormatada !== dataAtualFormatada) {
             camposMudados.dataNascimento = {
                 anterior: alunoAtual.dataNascimento,
-                novo: dataNasc
+                novo: dataNasc,
             };
             dadosParaAtualizar.dataNascimento = dataNasc;
         }
@@ -468,7 +491,7 @@ const editaAluno = async (req, res) => {
         if (nome !== alunoAtual.nome) {
             camposMudados.nome = {
                 anterior: alunoAtual.nome,
-                novo: nome
+                novo: nome,
             };
             dadosParaAtualizar.nome = nome;
         }
@@ -478,7 +501,7 @@ const editaAluno = async (req, res) => {
         if (emailNovo !== emailAtual) {
             camposMudados.email = {
                 anterior: emailAtual,
-                novo: emailNovo
+                novo: emailNovo,
             };
             dadosParaAtualizar.email = emailNovo;
         }
@@ -486,7 +509,7 @@ const editaAluno = async (req, res) => {
         if (telefone !== alunoAtual.telefone) {
             camposMudados.telefone = {
                 anterior: alunoAtual.telefone,
-                novo: telefone
+                novo: telefone,
             };
             dadosParaAtualizar.telefone = telefone;
         }
@@ -494,7 +517,7 @@ const editaAluno = async (req, res) => {
         if (nomeResponsavel !== alunoAtual.nomeResponsavel) {
             camposMudados.nomeResponsavel = {
                 anterior: alunoAtual.nomeResponsavel,
-                novo: nomeResponsavel
+                novo: nomeResponsavel,
             };
             dadosParaAtualizar.nomeResponsavel = nomeResponsavel;
         }
@@ -504,7 +527,7 @@ const editaAluno = async (req, res) => {
         if (enderecoNovo !== enderecoAtual) {
             camposMudados.endereco = {
                 anterior: enderecoAtual,
-                novo: enderecoNovo
+                novo: enderecoNovo,
             };
             dadosParaAtualizar.endereco = enderecoNovo;
         }
@@ -515,12 +538,12 @@ const editaAluno = async (req, res) => {
             const resultadoTurma = await validaTurma(turmaNova);
             if (!resultadoTurma.valido) {
                 return res.status(400).json({
-                    mensagem: resultadoTurma.mensagem
+                    mensagem: resultadoTurma.mensagem,
                 });
             }
             camposMudados.turmaId = {
                 anterior: turmaAtual,
-                novo: turmaNova
+                novo: turmaNova,
             };
             dadosParaAtualizar.turmaId = turmaNova;
         }
@@ -529,7 +552,7 @@ const editaAluno = async (req, res) => {
         if (Object.keys(camposMudados).length === 0) {
             return res.status(200).json({
                 mensagem: 'Nenhuma alteração foi realizada',
-                aluno: alunoAtual
+                aluno: alunoAtual,
             });
         }
 
@@ -546,7 +569,7 @@ const editaAluno = async (req, res) => {
         const garantia = await prisma.$transaction(async (tx) => {
             const alunoAtualizado = await tx.aluno.update({
                 where: { id },
-                data: dadosParaAtualizar
+                data: dadosParaAtualizar,
             });
 
             // Registra log apenas com os campos que mudaram
@@ -559,8 +582,8 @@ const editaAluno = async (req, res) => {
                     operacao: 'UPDATE',
                     descricao: `Aluno [${alunoAtual.matricula}] ${alunoAtual.nome} teve ${Object.keys(camposMudados).length} campo(s) editado(s) por ${req.user.nome}: ${Object.keys(camposMudados).join(', ')}`,
                     valorAnterior,
-                    valorNovo
-                }
+                    valorNovo,
+                },
             });
 
             return alunoAtualizado;
@@ -569,14 +592,13 @@ const editaAluno = async (req, res) => {
         return res.status(200).json({
             mensagem: `Aluno atualizado. ${Object.keys(camposMudados).length} campo(s) alterado(s).`,
             camposAlterados: Object.keys(camposMudados),
-            aluno: garantia
+            aluno: garantia,
         });
-
     } catch (error) {
         console.error('Erro ao editar aluno:', error);
         return res.status(500).json({
             mensagem: 'Erro ao editar aluno',
-            erro: error.message
+            erro: error.message,
         });
     }
 };
@@ -593,20 +615,20 @@ const inativaAluno = async (req, res) => {
                 id: true,
                 matricula: true,
                 nome: true,
-                ativo: true
-            }
+                ativo: true,
+            },
         });
 
         if (!alunoExiste) {
             return res.status(404).json({
-                mensagem: 'Aluno não encontrado'
+                mensagem: 'Aluno não encontrado',
             });
         }
 
         // Verifica se aluno já está inativo
         if (!alunoExiste.ativo) {
             return res.status(400).json({
-                mensagem: 'Aluno já está inativo'
+                mensagem: 'Aluno já está inativo',
             });
         }
 
@@ -616,8 +638,8 @@ const inativaAluno = async (req, res) => {
                 where: { id },
                 data: {
                     ativo: false,
-                    inativadoAt: new Date()
-                }
+                    inativadoAt: new Date(),
+                },
             });
 
             // Registra log de inativação de aluno
@@ -631,13 +653,13 @@ const inativaAluno = async (req, res) => {
                     descricao: `Aluno [${alunoExiste.matricula}] ${alunoExiste.nome} foi inativado por ${req.user.nome}`,
                     valorAnterior: {
                         ativo: true,
-                        inativadoAt: null
+                        inativadoAt: null,
                     },
                     valorNovo: {
                         ativo: false,
-                        inativadoAt: alunoInativado.inativadoAt
-                    }
-                }
+                        inativadoAt: alunoInativado.inativadoAt,
+                    },
+                },
             });
 
             return alunoInativado;
@@ -645,14 +667,13 @@ const inativaAluno = async (req, res) => {
 
         return res.status(200).json({
             mensagem: 'Aluno inativado',
-            aluno: garantia
+            aluno: garantia,
         });
-
     } catch (error) {
         console.error('Erro ao inativar aluno:', error);
         return res.status(500).json({
             mensagem: 'Erro ao inativar aluno',
-            erro: error.message
+            erro: error.message,
         });
     }
 };
@@ -670,20 +691,20 @@ const reativaAluno = async (req, res) => {
                 matricula: true,
                 nome: true,
                 ativo: true,
-                inativadoAt: true
-            }
+                inativadoAt: true,
+            },
         });
 
         if (!alunoExiste) {
             return res.status(404).json({
-                mensagem: 'Aluno não encontrado'
+                mensagem: 'Aluno não encontrado',
             });
         }
 
         // Verifica se aluno já está ativo
         if (alunoExiste.ativo) {
             return res.status(400).json({
-                mensagem: 'Aluno já está ativo'
+                mensagem: 'Aluno já está ativo',
             });
         }
 
@@ -693,8 +714,8 @@ const reativaAluno = async (req, res) => {
                 where: { id },
                 data: {
                     ativo: true,
-                    inativadoAt: null
-                }
+                    inativadoAt: null,
+                },
             });
 
             // Registra log de reativação de aluno
@@ -708,13 +729,13 @@ const reativaAluno = async (req, res) => {
                     descricao: `Aluno [${alunoExiste.matricula}] ${alunoExiste.nome} foi reativado por ${req.user.nome}`,
                     valorAnterior: {
                         ativo: false,
-                        inativadoAt: alunoExiste.inativadoAt
+                        inativadoAt: alunoExiste.inativadoAt,
                     },
                     valorNovo: {
                         ativo: true,
-                        inativadoAt: null
-                    }
-                }
+                        inativadoAt: null,
+                    },
+                },
             });
 
             return alunoReativado;
@@ -722,14 +743,13 @@ const reativaAluno = async (req, res) => {
 
         return res.status(200).json({
             mensagem: 'Aluno reativado',
-            aluno: garantia
+            aluno: garantia,
         });
-
     } catch (error) {
         console.error('Erro ao reativar aluno:', error);
         return res.status(500).json({
             mensagem: 'Erro ao reativar aluno',
-            erro: error.message
+            erro: error.message,
         });
     }
 };
@@ -753,25 +773,25 @@ const excluiAluno = async (req, res) => {
                 nomeResponsavel: true,
                 endereco: true,
                 turmaId: true,
-                ativo: true
-            }
+                ativo: true,
+            },
         });
 
         if (!alunoExiste) {
             return res.status(404).json({
-                mensagem: 'Aluno não encontrado'
+                mensagem: 'Aluno não encontrado',
             });
         }
 
         // Verifica se tem notas vinculadas
         const notasVinculadas = await prisma.nota.count({
-            where: { alunoId: id }
+            where: { alunoId: id },
         });
 
         if (notasVinculadas > 0) {
             return res.status(400).json({
                 mensagem: `Não é possível excluir este aluno. Ele possui ${notasVinculadas} nota(s) vinculada(s).`,
-                sugestao: 'Use a opção "Inativar" ao invés de excluir'
+                sugestao: 'Use a opção "Inativar" ao invés de excluir',
             });
         }
 
@@ -795,27 +815,26 @@ const excluiAluno = async (req, res) => {
                         nomeResponsavel: alunoExiste.nomeResponsavel,
                         endereco: alunoExiste.endereco,
                         turmaId: alunoExiste.turmaId,
-                        ativo: alunoExiste.ativo
+                        ativo: alunoExiste.ativo,
                     },
-                    valorNovo: null
-                }
+                    valorNovo: null,
+                },
             });
 
             // Deleta aluno
             await tx.aluno.delete({
-                where: { id }
+                where: { id },
             });
         });
 
         return res.status(200).json({
-            mensagem: 'Aluno excluído permanentemente'
+            mensagem: 'Aluno excluído permanentemente',
         });
-
     } catch (error) {
         console.error('Erro ao excluir aluno:', error);
         return res.status(500).json({
             mensagem: 'Erro ao excluir aluno',
-            erro: error.message
+            erro: error.message,
         });
     }
 };
@@ -827,5 +846,5 @@ module.exports = {
     editaAluno,
     inativaAluno,
     reativaAluno,
-    excluiAluno
+    excluiAluno,
 };
