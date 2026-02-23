@@ -52,8 +52,8 @@ const ListaAlunos = () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const admin = user?.perfil === 'admin';
 
-    // Busca alunos
-    const buscaAlunos = async () => {
+    // Carrega alunos
+    const carregaAlunos = async () => {
         try {
             setLoading(true);
             setErro(null);
@@ -70,7 +70,11 @@ const ListaAlunos = () => {
                 params.status = filtros.status;
             }
             if (filtros.turmaId !== 'todas') {
-                params.turmaId = filtros.turmaId;
+                if (filtros.turmaId === 'sem-turma') {
+                    params.turmaId = 'null';
+                } else {
+                    params.turmaId = filtros.turmaId;
+                }
             }
             if (filtros.busca.trim()) {
                 params.nome = filtros.busca.trim();
@@ -97,26 +101,26 @@ const ListaAlunos = () => {
         }
     };
 
-    // Busca turmas
-    const buscaTurmas = async () => {
+    // Carrega lista de turmas ativas
+    const carregaTurmas = async () => {
         try {
-            const response = await api.get('/turmas');
-            setTurmas(response.data.dados?.turmas || response.data || []);
+            const response = await api.get('/turmas?status=ativo');
+            setTurmas(response.data.turmas || []);
         } catch (error) {
-            console.error('Erro ao buscar turmas:', error);
+            console.error('Erro ao carregar turmas:', error);
         }
     };
 
     // Carrega dados ao montar o componente
     useEffect(() => {
-        buscaAlunos();
-        buscaTurmas();
+        carregaAlunos();
+        carregaTurmas();
     }, []);
 
     // Recarrega quando filtros, paginação ou ordenação mudam
     useEffect(() => {
         if (!loading) {
-            buscaAlunos();
+            carregaAlunos();
         }
     }, [filtros.status, filtros.turmaId, filtros.busca, paginacao.paginaAtual, ordenacao.campo, ordenacao.ordem]);
 
@@ -165,7 +169,7 @@ const ListaAlunos = () => {
             await api.put(`/alunos/${alunoId}/${acao}`);
             mostraMensagem('sucesso', `Aluno ${acao === 'inativar' ? 'inativado' : 'reativado'}`);
             fechaModalStatus();
-            buscaAlunos();
+            carregaAlunos();
         } catch (error) {
             console.error(`Erro ao ${acao} aluno:`, error);
             mostraMensagem('erro', error.response?.data?.mensagem || `Erro ao ${acao} aluno.`);
@@ -198,7 +202,7 @@ const ListaAlunos = () => {
             await api.delete(`/alunos/${modalExcluir.alunoId}`);
             mostraMensagem('sucesso', 'Aluno excluído');
             fechaModalExcluir();
-            buscaAlunos();
+            carregaAlunos();
         } catch (error) {
             console.error('Erro ao excluir aluno:', error);
             mostraMensagem('erro', error.response?.data?.mensagem || 'Erro ao excluir aluno.');
@@ -334,9 +338,10 @@ const ListaAlunos = () => {
                             <option value="todas">Todas as Turmas</option>
                             {turmas.map((turma) => (
                                 <option key={turma.id} value={turma.id}>
-                                    {turma.nomeCompleto}
+                                    {turma.nomeCompleto} - {turma.periodo}
                                 </option>
                             ))}
+                            <option value="sem-turma">Sem Turma</option>
                         </select>
                     </div>
                 </div>
@@ -354,7 +359,7 @@ const ListaAlunos = () => {
             {erro && !loading && (
                 <div className="error">
                     <p>⚠️ {erro}</p>
-                    <button onClick={buscaAlunos} className="btn btn-primary" /*style={{ marginTop: '15px' }}*/>
+                    <button onClick={carregaAlunos} className="btn btn-primary" /*style={{ marginTop: '15px' }}*/>
                         Tentar Novamente
                     </button>
                 </div>
@@ -365,12 +370,7 @@ const ListaAlunos = () => {
                 <>
                     {alunos.length === 0 ? (
                         <div className="empty">
-                            <p> Nenhum aluno encontrado. </p>
-                            {admin && (
-                                <button onClick={() => navigate('/alunos/cadastro')} className="btn btn-primary">
-                                    Cadastrar Aluno
-                                </button>
-                            )}
+                            <p> Nenhum aluno encontrado </p>
                         </div>
                     ) : (
                         <>
@@ -425,7 +425,7 @@ const ListaAlunos = () => {
                                                 <td data-label="Ações">
                                                     <div className="table-action">
                                                         <button
-                                                            onClick={() => navigate(`/alunos/editar/${aluno.id}`)}
+                                                            onClick={() => navigate(`/alunos/${aluno.id}`)}
                                                             className="btn-action"
                                                             title="Editar aluno"
                                                         >
@@ -458,7 +458,7 @@ const ListaAlunos = () => {
                                                     {/* Botões Mobile */}
                                                     <div className="table-action table-action-mobile">
                                                         <button
-                                                            onClick={() => navigate(`/alunos/editar/${alunos.id}`)}
+                                                            onClick={() => navigate(`/alunos/${aluno.id}`)}
                                                             className="btn-mobile btn-mobile-edit"
                                                         >
                                                             Editar
@@ -643,6 +643,7 @@ const ListaAlunos = () => {
                                         {turma.nomeCompleto}
                                     </option>
                                 ))}
+                                <option value="sem-turma">Sem Turma</option>
                             </select>
                         </div>
 

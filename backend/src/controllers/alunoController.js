@@ -5,6 +5,7 @@ const {
     validaDataNascimento,
     validaCPFDuplicado,
     validaTurma,
+    validaTelefone,
     geraMatricula,
 } = require('../utils/validacoes');
 
@@ -30,7 +31,11 @@ const listaAlunos = async (req, res) => {
         switch (perfil) {
             case 'admin': // Admin acessa todos os alunos
                 if (turmaId) {
-                    where.turmaId = turmaId;
+                    if (turmaId === 'null') {
+                        where.turmaId = null;
+                    } else {
+                        where.turmaId = turmaId;
+                    }
                 }
                 break;
 
@@ -41,9 +46,7 @@ const listaAlunos = async (req, res) => {
                 });
 
                 // Verifica se professor está atribuído em alguma turma
-                const turmaIdsProfessor = turmasProfessor.map(
-                    (pt) => pt.turmaId,
-                );
+                const turmaIdsProfessor = turmasProfessor.map((pt) => pt.turmaId);
 
                 if (turmaIdsProfessor.length === 0) {
                     return res.status(200).json({
@@ -65,8 +68,7 @@ const listaAlunos = async (req, res) => {
                     if (!turmaIdsProfessor.includes(turmaId)) {
                         return res.status(403).json({
                             sucesso: false,
-                            mensagem:
-                                'Você não tem permissão para visualizar essa turma',
+                            mensagem: 'Você não tem permissão para visualizar essa turma',
                         });
                     }
                     where.turmaId = turmaId;
@@ -78,8 +80,7 @@ const listaAlunos = async (req, res) => {
             default: // Outro perfil
                 return res.status(403).json({
                     sucesso: false,
-                    mensagem:
-                        'Você não tem permissão para visualizar essa turma',
+                    mensagem: 'Você não tem permissão para visualizar essa turma',
                 });
         }
 
@@ -214,34 +215,27 @@ const buscaAlunoId = async (req, res) => {
                 if (!alunoProfessor) {
                     return res.status(403).json({
                         sucesso: false,
-                        mensagem:
-                            'Você não tem permissão para visualizar este aluno',
+                        mensagem: 'Você não tem permissão para visualizar este aluno',
                     });
                 }
 
                 // Professor acessa apenas notas das disciplinas que ele está atribuído
-                const disciplinasProfessor =
-                    await prisma.professorTurma.findMany({
-                        where: {
-                            professorId: userId,
-                            turmaId: aluno.turmaId,
-                        },
-                        select: { disciplinaId: true },
-                    });
+                const disciplinasProfessor = await prisma.professorTurma.findMany({
+                    where: {
+                        professorId: userId,
+                        turmaId: aluno.turmaId,
+                    },
+                    select: { disciplinaId: true },
+                });
 
-                const disciplinaIdsProfessor = disciplinasProfessor.map(
-                    (pd) => pd.disciplinaId,
-                );
-                aluno.notas = aluno.notas.filter((nota) =>
-                    disciplinaIdsProfessor.includes(nota.disciplina.id),
-                );
+                const disciplinaIdsProfessor = disciplinasProfessor.map((pd) => pd.disciplinaId);
+                aluno.notas = aluno.notas.filter((nota) => disciplinaIdsProfessor.includes(nota.disciplina.id));
                 break;
 
             default:
                 return res.status(403).json({
                     sucesso: false,
-                    mensagem:
-                        'Você não tem permissão para visualizar este aluno',
+                    mensagem: 'Você não tem permissão para visualizar este aluno',
                 });
         }
 
@@ -264,16 +258,7 @@ const buscaAlunoId = async (req, res) => {
 const criaAluno = async (req, res) => {
     try {
         // Extrai dados do body
-        const {
-            nome,
-            email,
-            cpf,
-            dataNascimento,
-            telefone,
-            nomeResponsavel,
-            endereco,
-            turmaId,
-        } = req.body;
+        const { nome, email, cpf, dataNascimento, telefone, nomeResponsavel, endereco, turmaId } = req.body;
 
         // Valida campos obrigatórios
         if (!nome || !cpf || !dataNascimento || !telefone || !nomeResponsavel) {
@@ -300,6 +285,15 @@ const criaAluno = async (req, res) => {
             });
         }
         const dataNasc = resultadoDataNasc.dataNasc;
+
+        // Valida telefone
+        const resultadoTelefone = validaTelefone(telefone);
+        if (!resultadoTelefone.valido) {
+            return res.status(400).json({
+                mensagem: resultadoTelefone.mensagem,
+            });
+        }
+        const telefoneNumero = resultadoTelefone.telefoneNumero;
 
         // Verifica CPF duplicado
         const resultadoCPFDuplicado = await validaCPFDuplicado(cpfNumero);
@@ -329,7 +323,7 @@ const criaAluno = async (req, res) => {
                     email: email || null,
                     cpf: cpfNumero,
                     dataNascimento: dataNasc,
-                    telefone,
+                    telefone: telefoneNumero,
                     nomeResponsavel,
                     endereco: endereco || null,
                     turmaId: turmaId || null,
@@ -389,18 +383,9 @@ const criaAluno = async (req, res) => {
 const editaAluno = async (req, res) => {
     try {
         const { id } = req.params;
-        const {
-            nome,
-            email,
-            cpf,
-            dataNascimento,
-            telefone,
-            nomeResponsavel,
-            endereco,
-            turmaId,
-        } = req.body;
+        const { nome, email, cpf, dataNascimento, telefone, nomeResponsavel, endereco, turmaId } = req.body;
 
-        // 1. Validar campos obrigatórios
+        // Valida campos obrigatórios
         if (!nome || !cpf || !dataNascimento || !telefone || !nomeResponsavel) {
             return res.status(400).json({
                 mensagem:
@@ -476,9 +461,7 @@ const editaAluno = async (req, res) => {
         }
         const dataNasc = resultadoDataNasc.dataNasc;
 
-        const dataAtualFormatada = alunoAtual.dataNascimento
-            .toISOString()
-            .split('T')[0];
+        const dataAtualFormatada = alunoAtual.dataNascimento.toISOString().split('T')[0];
         const dataNovaFormatada = dataNasc.toISOString().split('T')[0];
         if (dataNovaFormatada !== dataAtualFormatada) {
             camposMudados.dataNascimento = {
@@ -486,6 +469,22 @@ const editaAluno = async (req, res) => {
                 novo: dataNasc,
             };
             dadosParaAtualizar.dataNascimento = dataNasc;
+        }
+
+        const resultadoTelefone = validaTelefone(telefone);
+        if (!resultadoTelefone.valido) {
+            return res.status(400).json({
+                mensagem: resultadoTelefone.mensagem,
+            });
+        }
+        const telefoneNumero = resultadoTelefone.telefoneNumero;
+
+        if (telefoneNumero !== alunoAtual.telefone) {
+            camposMudados.telefone = {
+                anterior: alunoAtual.telefone,
+                novo: telefoneNumero,
+            };
+            dadosParaAtualizar.telefone = telefoneNumero;
         }
 
         if (nome !== alunoAtual.nome) {

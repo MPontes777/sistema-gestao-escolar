@@ -248,34 +248,33 @@ input:checked + .slider:after {
 .form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
+    gap: 30px;
 }
 
 /* Grid com 2 colunas */
 .form-grid-2 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 30px;
 }
 
 /* Botões do formulário */
 .form-action {
     display: flex;
-    gap: 15px;
-    align-items: center;
+    padding-top: 30px;
+    gap: 30px;
+    justify-content: flex-end;
 }
 
 /* Estados */
 .loading {
     text-align: center;
-    padding: 40px;
     font-size: 18px;
     color: #7f8c8d;
 }
 
 .error {
     text-align: center;
-    padding: 40px;
     color: #e74c3c;
     background-color: #fadbd8;
     border-radius: 8px;
@@ -285,7 +284,6 @@ input:checked + .slider:after {
 
 .empty {
     text-align: center;
-    padding: 40px;
     color: #7f8c8d;
     font-size: 18px;
 }
@@ -609,10 +607,6 @@ input:checked + .slider:after {
 
     .form-grid-2 {
         grid-template-columns: 1fr;
-    }
-
-    .form-action {
-        flex-direction: column-reverse;
     }
 
     .form-action .btn {

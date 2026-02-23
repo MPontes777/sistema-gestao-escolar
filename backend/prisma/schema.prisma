@@ -77,7 +77,7 @@ model Aluno {
   nome            String
   cpf             String    @unique
   dataNascimento  DateTime
-  email           String?
+  email           String? // Pode ser cadastrado depois
   telefone        String
   nomeResponsavel String
   endereco        String? // Pode ser cadastrado depois

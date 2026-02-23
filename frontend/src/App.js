@@ -1,15 +1,11 @@
 import React from 'react';
-import {
-    BrowserRouter as Router,
-    Routes,
-    Route,
-    Navigate,
-} from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login/Login';
 import Layout from './components/Layout/Layout';
 import DashboardAdmin from './pages/Dashboard/DashboardAdmin';
 import DashboardProfessor from './pages/Dashboard/DashboardProfessor';
 import ListaAlunos from './pages/Alunos/ListaAlunos';
+import FormularioAluno from './pages/Alunos/FormularioAluno';
 import { isAuthenticated, getUser } from './services/api';
 
 // Protege rotas privadas
@@ -91,6 +87,28 @@ function App() {
                         <AdminRoute>
                             <Layout>
                                 <ListaAlunos />
+                            </Layout>
+                        </AdminRoute>
+                    }
+                />
+                {/* Rota privada - Cadastrar Aluno */}
+                <Route
+                    path="/alunos/cadastro"
+                    element={
+                        <AdminRoute>
+                            <Layout>
+                                <FormularioAluno />
+                            </Layout>
+                        </AdminRoute>
+                    }
+                />
+                {/* Rota privada - Editar Aluno */}
+                <Route
+                    path="/alunos/:id"
+                    element={
+                        <AdminRoute>
+                            <Layout>
+                                <FormularioAluno />
                             </Layout>
                         </AdminRoute>
                     }

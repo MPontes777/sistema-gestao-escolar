@@ -5,6 +5,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const alunoRoutes = require('./routes/alunoRoutes');
+const turmaRoutes = require('./routes/turmaRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000; // Porta do server em produção ou 3000 como porta local
@@ -16,22 +17,23 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/alunos', alunoRoutes);
+app.use('/turmas', turmaRoutes);
 
 // Rota teste
 app.get('/', (req, res) => {
-  res.json({ message: 'TCC Desenvolvimento Full Stack' });
+    res.json({ message: 'TCC Desenvolvimento Full Stack' });
 });
 
 // Roda teste com token
 const { authenticateToken } = require('./middlewares/authMiddleware');
 app.get('/teste-protegido', authenticateToken, (req, res) => {
-  res.json ({
-    message: 'Autenticado!',
-    usuario: req.user
-  });
+    res.json({
+        message: 'Autenticado!',
+        usuario: req.user,
+    });
 });
 
 // Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`Server rodando na porta ${PORT}`);
+    console.log(`Server rodando na porta ${PORT}`);
 });

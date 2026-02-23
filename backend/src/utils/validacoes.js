@@ -8,7 +8,6 @@ const prisma = new PrismaClient();
  * @returns {Object} { valido: boolean, cpfNumero: string, mensagem: string }
  */
 function validaCPF(cpf) {
-
     // Valida se CPF é válido (Não utilizar no MVP)
     /*if (!cpfValidator.isValid(cpf)) {
         return res.status(400).json({
@@ -24,14 +23,14 @@ function validaCPF(cpf) {
         return {
             valido: false,
             cpfNumero: null,
-            mensagem: 'CPF deve conter 11 dígitos'
+            mensagem: 'CPF deve conter 11 dígitos',
         };
     }
 
     return {
         valido: true,
         cpfNumero,
-        mensagem: null
+        mensagem: null,
     };
 }
 
@@ -41,7 +40,7 @@ function validaCPF(cpf) {
  * @returns {Object} { valido: boolean, dataNasc: Date, mensagem: string }
  */
 function validaDataNascimento(dataNascimento) {
-    const hoje = new Date(); 
+    const hoje = new Date();
     const dataNasc = new Date(dataNascimento);
 
     // Verifica se a data é válida
@@ -49,7 +48,7 @@ function validaDataNascimento(dataNascimento) {
         return {
             valido: false,
             dataNasc: null,
-            mensagem: 'Data de nascimento inválida'
+            mensagem: 'Data de nascimento inválida',
         };
     }
 
@@ -58,14 +57,14 @@ function validaDataNascimento(dataNascimento) {
         return {
             valido: false,
             dataNasc: null,
-            mensagem: 'Data de nascimento não pode ser futura'
+            mensagem: 'Data de nascimento não pode ser futura',
         };
     }
 
     return {
         valido: true,
         dataNasc,
-        mensagem: null
+        mensagem: null,
     };
 }
 
@@ -77,7 +76,7 @@ function validaDataNascimento(dataNascimento) {
  */
 async function validaCPFDuplicado(cpfNumero, idExcluir = null) {
     const where = { cpf: cpfNumero };
-    
+
     if (idExcluir) {
         where.id = { not: idExcluir };
     }
@@ -87,13 +86,13 @@ async function validaCPFDuplicado(cpfNumero, idExcluir = null) {
     if (cpfExiste) {
         return {
             existe: true,
-            mensagem: 'Este CPF já está cadastrado'
+            mensagem: 'Este CPF já está cadastrado',
         };
     }
 
     return {
         existe: false,
-        mensagem: null
+        mensagem: null,
     };
 }
 
@@ -107,20 +106,20 @@ async function validaTurma(turmaId) {
         return {
             valido: true,
             turma: null,
-            mensagem: null
+            mensagem: null,
         };
     }
 
     const turma = await prisma.turma.findUnique({
         where: { id: turmaId },
-        select: { id: true, ativo: true }
+        select: { id: true, ativo: true },
     });
 
     if (!turma) {
         return {
             valido: false,
             turma: null,
-            mensagem: 'Turma não encontrada'
+            mensagem: 'Turma não encontrada',
         };
     }
 
@@ -128,14 +127,46 @@ async function validaTurma(turmaId) {
         return {
             valido: false,
             turma,
-            mensagem: 'Não é possível vincular aluno a uma turma inativa'
+            mensagem: 'Não é possível vincular aluno a uma turma inativa',
         };
     }
 
     return {
         valido: true,
         turma,
-        mensagem: null
+        mensagem: null,
+    };
+}
+
+/**
+ * Valida telefone
+ * @param {string} telefone - Telefone a ser validado
+ * @returns {Object} { valido: boolean, telefoneNumero: string, mensagem: string }
+ */
+function validaTelefone(telefone) {
+    if (!telefone || telefone.trim() === '') {
+        return {
+            valido: true,
+            telefoneNumero: null,
+            mensagem: null,
+        };
+    }
+
+    const telefoneNumero = telefone.replace(/\D/g, ''); // Remove pontuação
+
+    // Verifica se telefone possui 10 ou 11 dígitos
+    if (telefoneNumero.length !== 10 && telefoneNumero.length !== 11) {
+        return {
+            valido: false,
+            telefoneNumero: null,
+            mensagem: 'Telefone deve conter 10 ou 11 dígitos',
+        };
+    }
+
+    return {
+        valido: true,
+        telefoneNumero,
+        mensagem: null,
     };
 }
 
@@ -150,11 +181,11 @@ async function geraMatricula() {
     const ultimaMatricula = await prisma.aluno.findFirst({
         where: {
             matricula: {
-                startsWith: anoAtual.toString()
-            }
+                startsWith: anoAtual.toString(),
+            },
         },
         orderBy: { createdAt: 'desc' },
-        select: { matricula: true }
+        select: { matricula: true },
     });
 
     let novaMatricula = 1;
@@ -174,5 +205,6 @@ module.exports = {
     validaDataNascimento,
     validaCPFDuplicado,
     validaTurma,
-    geraMatricula
+    validaTelefone,
+    geraMatricula,
 };
