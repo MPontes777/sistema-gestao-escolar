@@ -29,7 +29,7 @@ async function main() {
     });
     const portugues = await prisma.disciplina.create({
         data: {
-            nome: 'Português',
+            nome: 'Língua Portuguesa',
             ativo: true,
         },
     });
@@ -47,14 +47,26 @@ async function main() {
     });
     const ciencias = await prisma.disciplina.create({
         data: {
-        nome: 'Ciências',
-        ativo: true,
+            nome: 'Ciências',
+            ativo: true,
         },
     });
     const ingles = await prisma.disciplina.create({
         data: {
-        nome: 'Inglês',
-        ativo: true,
+            nome: 'Língua Inglesa',
+            ativo: true,
+        },
+    });
+    const artes = await prisma.disciplina.create({
+        data: {
+            nome: 'Artes',
+            ativo: true,
+        },
+    });
+    const edFis = await prisma.disciplina.create({
+        data: {
+            nome: 'Educação Física',
+            ativo: true,
         },
     });
 
@@ -103,7 +115,7 @@ async function main() {
         data: {
             nome: 'Fagner Januario',
             email: 'fagner.januario@escola.com',
-            senha: senhaHash,   
+            senha: senhaHash,
             perfil: 'professor',
             ativo: true,
         },
@@ -128,44 +140,44 @@ async function main() {
 
     const turma8A2025 = await prisma.turma.create({
         data: {
-            anoSerie: '8º',
+            anoSerie: '8º Ano',
             letra: 'A',
             periodo: 'MATUTINO',
             anoLetivo: 2025,
-            nomeCompleto: '8º A (2025)',
+            nomeCompleto: '8º Ano A (2025)',
             ativo: true,
         },
     });
     console.log('8º A (2025) criada');
     const turma8B2025 = await prisma.turma.create({
         data: {
-            anoSerie: '8º',
+            anoSerie: '8º Ano',
             letra: 'B',
             periodo: 'VESPERTINO',
             anoLetivo: 2025,
-            nomeCompleto: '8º B (2025)',
+            nomeCompleto: '8º Ano B (2025)',
             ativo: true,
         },
     });
     console.log('8º B (2025) criada');
     const turma9A2025 = await prisma.turma.create({
         data: {
-            anoSerie: '9º',
+            anoSerie: '9º Ano',
             letra: 'A',
             periodo: 'MATUTINO',
             anoLetivo: 2025,
-            nomeCompleto: '9º A (2025)',
+            nomeCompleto: '9º Ano A (2025)',
             ativo: true,
         },
     });
     console.log('9º A (2025) criada');
     const turma9A2024 = await prisma.turma.create({
         data: {
-            anoSerie: '9º',
+            anoSerie: '9º Ano',
             letra: 'A',
             periodo: 'MATUTINO',
             anoLetivo: 2024,
-            nomeCompleto: '9º A (2024)',
+            nomeCompleto: '9º Ano A (2024)',
             ativo: false,
             inativadoAt: new Date('2024-12-20'),
         },
@@ -192,7 +204,7 @@ async function main() {
         },
     });
     console.log('Professor de matematica vinculado a 9º A (2025)');
-        await prisma.professorTurma.create({
+    await prisma.professorTurma.create({
         data: {
             professorId: profPortugues.id,
             turmaId: turma8A2025.id,
@@ -200,7 +212,7 @@ async function main() {
         },
     });
     console.log('Professor de portugues vinculado a 8º A (2025)');
-        await prisma.professorTurma.create({
+    await prisma.professorTurma.create({
         data: {
             professorId: profPortugues.id,
             turmaId: turma8B2025.id,
@@ -208,7 +220,7 @@ async function main() {
         },
     });
     console.log('Professor de portugues vinculado a 8º B (2025)');
-        await prisma.professorTurma.create({
+    await prisma.professorTurma.create({
         data: {
             professorId: profPortugues.id,
             turmaId: turma9A2025.id,
@@ -216,7 +228,7 @@ async function main() {
         },
     });
     console.log('Professor de portugues vinculado a 9º A (2025)');
-        await prisma.professorTurma.create({
+    await prisma.professorTurma.create({
         data: {
             professorId: profCiencias.id,
             turmaId: turma9A2025.id,
@@ -224,7 +236,7 @@ async function main() {
         },
     });
     console.log('Professor de ciencias vinculado a 9º A (2025)');
-        await prisma.professorTurma.create({
+    await prisma.professorTurma.create({
         data: {
             professorId: profInativo.id,
             turmaId: turma9A2024.id,
@@ -530,13 +542,12 @@ async function main() {
     console.log('Seed concluído com sucesso\n');
 }
 
-
 //Roda a função
 main()
-.catch((e) => {
-    console.error('Erro ao executar seed:', e);
-    process.exit(1);
-})
-.finally(async () => {
-    await prisma.$disconnect();
-});
+    .catch((e) => {
+        console.error('Erro ao executar seed:', e);
+        process.exit(1);
+    })
+    .finally(async () => {
+        await prisma.$disconnect();
+    });
