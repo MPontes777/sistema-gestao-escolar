@@ -94,10 +94,23 @@ model Aluno {
   @@map("alunos")
 }
 
+// Tabela AnoSerie
+model AnoSerie {
+  id     String  @id @default(uuid())
+  nome   String  @unique
+  etapa  String
+  ordem  Int
+
+  // Relacionamentos
+  turmas Turma[]
+
+  @@map("ano_serie")
+}
+
 // Tabela Turma
 model Turma {
   id              String   @id @default(uuid())
-  anoSerie        String
+  anoSerieId      String
   letra           String
   anoLetivo       Int
   periodo         Periodo
@@ -108,12 +121,13 @@ model Turma {
   updatedAt       DateTime @updatedAt
 
   // Relacionamentos
+  anoSerie         AnoSerie          @relation(fields: [anoSerieId], references: [id])
   alunos           Aluno[]
   professorTurmas  ProfessorTurma[]
   planejamentos    Planejamento[]
 
   // Não existem duas turmas iguais
-  @@unique([anoSerie, letra, periodo, anoLetivo])
+  @@unique([anoSerieId, letra, periodo, anoLetivo])
   @@map("turmas")
 }
 
