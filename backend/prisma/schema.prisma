@@ -111,7 +111,7 @@ model AnoSerie {
 model Turma {
   id              String   @id @default(uuid())
   anoSerieId      String
-  letra           String
+  letra           String?
   anoLetivo       Int
   periodo         Periodo
   nomeCompleto    String
@@ -127,7 +127,7 @@ model Turma {
   planejamentos    Planejamento[]
 
   // Não existem duas turmas iguais
-  @@unique([anoSerieId, letra, periodo, anoLetivo])
+  @@unique([anoSerieId, letra, anoLetivo])
   @@map("turmas")
 }
 

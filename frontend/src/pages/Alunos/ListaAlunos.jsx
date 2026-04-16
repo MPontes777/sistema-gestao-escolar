@@ -104,8 +104,8 @@ const ListaAlunos = () => {
     // Carrega lista de turmas ativas
     const carregaTurmas = async () => {
         try {
-            const response = await api.get('/turmas?status=ativo');
-            setTurmas(response.data.turmas || []);
+            const response = await api.get('/turmas?status=ativo&ordenarPor=anoSerie&ordem=asc');
+            setTurmas(response.data.dados?.turmas || []);
         } catch (error) {
             console.error('Erro ao carregar turmas:', error);
         }

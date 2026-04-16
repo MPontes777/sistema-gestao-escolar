@@ -200,6 +200,81 @@ async function geraMatricula() {
     return `${anoAtual}${novaMatricula}`;
 }
 
+/**
+ * Valida ano letivo
+ * @param {string|number} anoLetivo - Ano letivo a ser validado
+ * @returns {Object} { valido: boolean, anoLetivoNum: number, mensagem: string }
+ */
+function validaAnoLetivo(anoLetivo) {
+    const anoLetivoNum = parseInt(anoLetivo);
+
+    if (isNaN(anoLetivoNum)) {
+        return {
+            valido: false,
+            anoLetivoNum: null,
+            mensagem: 'Ano letivo inválido',
+        };
+    }
+
+    return {
+        valido: true,
+        anoLetivoNum,
+        mensagem: null,
+    };
+}
+
+/**
+ * Valida e formata letra da turma
+ * @param {string} letra - Letra a ser validada
+ * @returns {Object} { valido: boolean, letraMaiuscula: string, mensagem: string }
+ */
+function validaLetraTurma(letra) {
+    if (!letra) {
+        return {
+            valido: true,
+            letraMaiuscula: null,
+            mensagem: null,
+        };
+    }
+
+    const letraMaiuscula = letra.toUpperCase();
+
+    if (!letraMaiuscula || !/^[A-Z]$/.test(letraMaiuscula)) {
+        return {
+            valido: false,
+            letraMaiuscula: null,
+            mensagem: 'Escolha uma letra entre A e Z',
+        };
+    }
+
+    return {
+        valido: true,
+        letraMaiuscula,
+        mensagem: null,
+    };
+}
+
+/**
+ * Valida período da turma
+ * @param {string} periodo - Período a ser validado
+ * @returns {Object} { valido: boolean, mensagem: string }
+ */
+function validaPeriodo(periodo) {
+    const periodosValidos = ['MATUTINO', 'VESPERTINO', 'NOTURNO'];
+
+    if (!periodosValidos.includes(periodo)) {
+        return {
+            valido: false,
+            mensagem: 'Período inválido. Escolha entre MATUTINO, VESPERTINO ou NOTURNO',
+        };
+    }
+
+    return {
+        valido: true,
+        mensagem: null,
+    };
+}
+
 module.exports = {
     validaCPF,
     validaDataNascimento,
@@ -207,4 +282,7 @@ module.exports = {
     validaTurma,
     validaTelefone,
     geraMatricula,
+    validaAnoLetivo,
+    validaLetraTurma,
+    validaPeriodo,
 };
