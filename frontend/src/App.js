@@ -6,6 +6,8 @@ import DashboardAdmin from './pages/Dashboard/DashboardAdmin';
 import DashboardProfessor from './pages/Dashboard/DashboardProfessor';
 import ListaAlunos from './pages/Alunos/ListaAlunos';
 import FormularioAluno from './pages/Alunos/FormularioAluno';
+import ListaTurmas from './pages/Turmas/ListaTurmas';
+import FormularioTurma from './pages/Turmas/FormularioTurma';
 import { isAuthenticated, getUser } from './services/api';
 
 // Protege rotas privadas
@@ -109,6 +111,39 @@ function App() {
                         <AdminRoute>
                             <Layout>
                                 <FormularioAluno />
+                            </Layout>
+                        </AdminRoute>
+                    }
+                />
+                {/* Rota privada - Lista de Turmas */}
+                <Route
+                    path="/turmas"
+                    element={
+                        <AdminRoute>
+                            <Layout>
+                                <ListaTurmas />
+                            </Layout>
+                        </AdminRoute>
+                    }
+                />
+                {/* Rota privada - Cadastrar Turma */}
+                <Route
+                    path="/turmas/cadastro"
+                    element={
+                        <AdminRoute>
+                            <Layout>
+                                <FormularioTurma />
+                            </Layout>
+                        </AdminRoute>
+                    }
+                />
+                {/* Rota privada - Editar Turma */}
+                <Route
+                    path="/turmas/:id"
+                    element={
+                        <AdminRoute>
+                            <Layout>
+                                <FormularioTurma />
                             </Layout>
                         </AdminRoute>
                     }

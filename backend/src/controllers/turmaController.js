@@ -10,6 +10,8 @@ const listaTurmas = async (req, res) => {
             etapa,
             anoLetivo,
             periodo,
+            semAlunos,
+            nome,
             ordenarPor = 'nomeCompleto', // Ordenação
             ordem = 'asc',
             limit = 10, // Quantidade por página
@@ -82,6 +84,16 @@ const listaTurmas = async (req, res) => {
             where.anoSerie = { etapa };
         }
 
+        // Filtro por turmas sem alunos
+        if (semAlunos === 'true') {
+            where.alunos = { none: {} };
+        }
+
+        // Filtro por nome
+        if (nome) {
+            where.nomeCompleto = { contains: nome, mode: 'insensitive' };
+        }
+
         // Ordenação
         let orderBy = {};
         if (ordenarPor === 'anoSerie') {
@@ -105,8 +117,8 @@ const listaTurmas = async (req, res) => {
                         ordem: true,
                     },
                 },
-                _count: {
-                    select: { alunos: true },
+                alunos: {
+                    select: { id: true, ativo: true },
                 },
             },
         });
