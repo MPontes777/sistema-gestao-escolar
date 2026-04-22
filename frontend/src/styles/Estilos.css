@@ -256,13 +256,13 @@
 
 .spinner-loading {
     display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(0, 0, 0, 0.3);
     border-radius: 50%;
-    border-top-color: #ffffff;
-    animation: girar 0.8s linear infinite;
-    margin-right: 8px;
+    border-top-color: #333333;
+    animation: spin 0.8s linear infinite;
+    margin-right: 10px;
 }
 
 /* Scrollbar */

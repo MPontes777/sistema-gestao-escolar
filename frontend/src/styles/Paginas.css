@@ -273,13 +273,20 @@ input:checked + .slider:after {
     color: #7f8c8d;
 }
 
+.loading p {
+    padding-top: 10px;
+}
+
 .error {
     text-align: center;
     color: #e74c3c;
-    background-color: #fadbd8;
     border-radius: 8px;
     max-width: 600px;
     margin: 0 auto;
+}
+
+.error p {
+    padding-bottom: 10px;
 }
 
 .empty {
