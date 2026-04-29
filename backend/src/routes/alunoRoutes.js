@@ -17,6 +17,8 @@ router.post('/', authorize('admin'), alunoController.criaAluno); // Apenas Admin
 router.put('/:id', authorize('admin'), alunoController.editaAluno); // Apenas Admin tem permissão
 router.put('/:id/inativar', authorize('admin'), alunoController.inativaAluno); // Apenas Admin tem permissão
 router.put('/:id/reativar', authorize('admin'), alunoController.reativaAluno); // Apenas Admin tem permissão
+router.put('/:id/vincular', authorize('admin'), alunoController.vinculaAluno); // Apenas Admin tem permissão
+router.put('/:id/desvincular', authorize('admin'), alunoController.desvinculaAluno); // Apenas Admin tem permissão
 
 // Método DELETE
 router.delete('/:id', authorize('admin'), alunoController.excluiAluno); // Apenas Admin tem permissão

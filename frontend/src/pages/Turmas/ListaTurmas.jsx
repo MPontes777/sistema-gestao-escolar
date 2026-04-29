@@ -407,7 +407,7 @@ const ListaTurmas = () => {
                     ) : (
                         <>
                             <div className="table-container">
-                                <table className="table">
+                                <table className="table table-turmas">
                                     <thead>
                                         <tr>
                                             <th className="sort-header" onClick={() => mudaOrdenacao('ativo')}>
@@ -460,6 +460,13 @@ const ListaTurmas = () => {
                                                 <td data-label="Ações">
                                                     <div className="table-action">
                                                         <button
+                                                            onClick={() => navigate(`/turmas/${turma.id}/detalhes`)}
+                                                            className="btn-action"
+                                                            title="Ver detalhes"
+                                                        >
+                                                            👁️
+                                                        </button>
+                                                        <button
                                                             onClick={() => navigate(`/turmas/${turma.id}`)}
                                                             className="btn-action"
                                                             title="Editar turma"
@@ -494,6 +501,12 @@ const ListaTurmas = () => {
 
                                                     {/* Botões Mobile */}
                                                     <div className="table-action table-action-mobile">
+                                                        <button
+                                                            onClick={() => navigate(`/turmas/${turma.id}/detalhes`)}
+                                                            className="btn-mobile btn-mobile-edit"
+                                                        >
+                                                            Detalhes
+                                                        </button>
                                                         <button
                                                             onClick={() => navigate(`/turmas/${turma.id}`)}
                                                             className="btn-mobile btn-mobile-edit"

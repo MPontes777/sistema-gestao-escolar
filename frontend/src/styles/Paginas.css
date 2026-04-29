@@ -770,6 +770,65 @@ input:checked + .slider:after {
     .modal-action .btn {
         width: 100%;
     }
+
+    /* Ajustes no ListaTurmas */
+    .table-turmas td[data-label='Ano Letivo'],
+    .table-turmas td[data-label='Ativos'],
+    .table-turmas td[data-label='Inativos'] {
+        display: none;
+    }
+
+    .table-turmas td[data-label='Nome'] {
+        padding-top: 0;
+    }
+
+    .table-turmas td[data-label='Etapa'] {
+        font-size: 13px;
+        color: #7f8c8d;
+        display: block;
+        padding-top: 4px;
+    }
+
+    .table-turmas td[data-label='Período'] {
+        font-size: 13px;
+        color: #7f8c8d;
+        display: block;
+    }
+
+    /* Ajustes no DetalhesTurma */
+    .table-alunos-turma td[data-label='Matrícula'] {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        padding: 0;
+        font-weight: 600;
+        font-size: 12px;
+        color: #7f8c8d;
+    }
+
+    .table-alunos-turma td[data-label='Data de Nasc.'],
+    .table-alunos-turma td[data-label='E-mail'] {
+        display: none;
+    }
+
+    .table-professores-turma td[data-label='Professor'] {
+        font-size: 18px;
+        padding-top: 5px;
+        display: inline;
+    }
+
+    .table-professores-turma td[data-label='Disciplina'] {
+        display: inline;
+        float: right;
+    }
+
+    /* Modal de vincular */
+    .table td[data-label='Selecionar'] {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        padding: 0;
+    }
 }
 
 @media (max-width: 480px) {

@@ -8,6 +8,7 @@ import ListaAlunos from './pages/Alunos/ListaAlunos';
 import FormularioAluno from './pages/Alunos/FormularioAluno';
 import ListaTurmas from './pages/Turmas/ListaTurmas';
 import FormularioTurma from './pages/Turmas/FormularioTurma';
+import DetalhesTurma from './pages/Turmas/DetalhesTurma';
 import { isAuthenticated, getUser } from './services/api';
 
 // Protege rotas privadas
@@ -144,6 +145,17 @@ function App() {
                         <AdminRoute>
                             <Layout>
                                 <FormularioTurma />
+                            </Layout>
+                        </AdminRoute>
+                    }
+                />
+                {/* Rota privada - Detalhes da Turma */}
+                <Route
+                    path="/turmas/:id/detalhes"
+                    element={
+                        <AdminRoute>
+                            <Layout>
+                                <DetalhesTurma />
                             </Layout>
                         </AdminRoute>
                     }

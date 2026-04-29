@@ -838,6 +838,158 @@ const excluiAluno = async (req, res) => {
     }
 };
 
+// Vincula aluno a uma turma
+const vinculaAluno = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { turmaId } = req.body;
+
+        if (!turmaId) {
+            return res.status(400).json({
+                mensagem: 'Campo obrigatório: turmaId',
+            });
+        }
+
+        const alunoAtual = await prisma.aluno.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                matricula: true,
+                nome: true,
+                turmaId: true,
+                ativo: true,
+            },
+        });
+
+        if (!alunoAtual) {
+            return res.status(404).json({
+                mensagem: 'Aluno não encontrado',
+            });
+        }
+
+        if (!alunoAtual.ativo) {
+            return res.status(400).json({
+                mensagem: 'Não é possível vincular um aluno inativo a uma turma',
+            });
+        }
+
+        if (alunoAtual.turmaId === turmaId) {
+            return res.status(400).json({
+                mensagem: 'Aluno já está vinculado a esta turma',
+            });
+        }
+
+        const resultadoTurma = await validaTurma(turmaId);
+        if (!resultadoTurma.valido) {
+            return res.status(400).json({
+                mensagem: resultadoTurma.mensagem,
+            });
+        }
+
+        const garantia = await prisma.$transaction(async (tx) => {
+            const alunoAtualizado = await tx.aluno.update({
+                where: { id },
+                data: { turmaId },
+            });
+
+            await tx.auditLog.create({
+                data: {
+                    usuarioId: req.user.id,
+                    usuarioNome: req.user.nome,
+                    tabela: 'alunos',
+                    registroId: alunoAtualizado.id,
+                    operacao: 'UPDATE',
+                    descricao: `Aluno [${alunoAtual.matricula}] ${alunoAtual.nome} foi vinculado à turma ${turmaId} por ${req.user.nome}`,
+                    valorAnterior: { turmaId: alunoAtual.turmaId },
+                    valorNovo: { turmaId },
+                },
+            });
+
+            return alunoAtualizado;
+        });
+
+        return res.status(200).json({
+            mensagem: 'Aluno vinculado à turma',
+            aluno: garantia,
+        });
+    } catch (error) {
+        console.error('Erro ao vincular aluno:', error);
+        return res.status(500).json({
+            mensagem: 'Erro ao vincular aluno',
+            erro: error.message,
+        });
+    }
+};
+
+// Desvincula aluno de uma turma
+const desvinculaAluno = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const alunoAtual = await prisma.aluno.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                matricula: true,
+                nome: true,
+                turmaId: true,
+                ativo: true,
+            },
+        });
+
+        if (!alunoAtual) {
+            return res.status(404).json({
+                mensagem: 'Aluno não encontrado',
+            });
+        }
+
+        if (!alunoAtual.ativo) {
+            return res.status(400).json({
+                mensagem: 'Não é possível desvincular um aluno inativo',
+            });
+        }
+
+        if (!alunoAtual.turmaId) {
+            return res.status(400).json({
+                mensagem: 'Aluno já está sem turma',
+            });
+        }
+
+        const garantia = await prisma.$transaction(async (tx) => {
+            const alunoAtualizado = await tx.aluno.update({
+                where: { id },
+                data: { turmaId: null },
+            });
+
+            await tx.auditLog.create({
+                data: {
+                    usuarioId: req.user.id,
+                    usuarioNome: req.user.nome,
+                    tabela: 'alunos',
+                    registroId: alunoAtualizado.id,
+                    operacao: 'UPDATE',
+                    descricao: `Aluno [${alunoAtual.matricula}] ${alunoAtual.nome} foi desvinculado da turma ${alunoAtual.turmaId} por ${req.user.nome}`,
+                    valorAnterior: { turmaId: alunoAtual.turmaId },
+                    valorNovo: { turmaId: null },
+                },
+            });
+
+            return alunoAtualizado;
+        });
+
+        return res.status(200).json({
+            mensagem: 'Aluno desvinculado da turma com sucesso',
+            aluno: garantia,
+        });
+    } catch (error) {
+        console.error('Erro ao desvincular aluno:', error);
+        return res.status(500).json({
+            mensagem: 'Erro ao desvincular aluno',
+            erro: error.message,
+        });
+    }
+};
+
 module.exports = {
     listaAlunos,
     buscaAlunoId,
@@ -846,4 +998,6 @@ module.exports = {
     inativaAluno,
     reativaAluno,
     excluiAluno,
+    vinculaAluno,
+    desvinculaAluno,
 };

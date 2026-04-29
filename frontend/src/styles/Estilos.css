@@ -83,6 +83,21 @@
     background-color: #ecf0f1;
 }
 
+/* Card header com ação à direita */
+.card-header-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Título de seção dentro de card */
+.card-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
 /* Campos de Formulários */
 .input-group {
     display: flex;
@@ -147,6 +162,12 @@
 .input-select:disabled {
     background-color: #ecf0f1;
     cursor: not-allowed;
+}
+
+/* Valor de campo em modo leitura */
+.input-value {
+    font-size: 14px;
+    color: #2c3e50;
 }
 
 .message-error {

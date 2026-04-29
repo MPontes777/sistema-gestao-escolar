@@ -10,6 +10,7 @@
     flex: 1;
     padding: 30px;
     min-height: calc(100vh - 60px);
+    background-color: #ecf0f1;
 }
 
 @media (max-width: 768px) {
@@ -23,7 +24,7 @@
     .layout {
         min-height: 100vh;
     }
-    
+
     .layout-content {
         margin-left: 0;
         margin-bottom: 70px;

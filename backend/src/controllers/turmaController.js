@@ -171,6 +171,8 @@ const buscaTurmaId = async (req, res) => {
                         matricula: true,
                         nome: true,
                         ativo: true,
+                        dataNascimento: true,
+                        email: true,
                     },
                     orderBy: { nome: 'asc' },
                 },
