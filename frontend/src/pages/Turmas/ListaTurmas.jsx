@@ -14,7 +14,6 @@ const ListaTurmas = () => {
         etapa: 'todas',
         periodo: 'todos',
         semAlunos: false,
-        busca: '',
     });
     const [paginacao, setPaginacao] = useState({
         paginaAtual: 1,
@@ -44,7 +43,6 @@ const ListaTurmas = () => {
         etapa: 'todas',
         periodo: 'todos',
         semAlunos: false,
-        busca: '',
     });
     const [mensagem, setMensagem] = useState({
         tipo: '',
@@ -76,9 +74,6 @@ const ListaTurmas = () => {
             }
             if (filtros.semAlunos) {
                 params.semAlunos = 'true';
-            }
-            if (filtros.busca.trim()) {
-                params.nome = filtros.busca.trim();
             }
 
             const response = await api.get('/turmas', { params });
@@ -116,7 +111,6 @@ const ListaTurmas = () => {
         filtros.status,
         filtros.etapa,
         filtros.periodo,
-        filtros.busca,
         filtros.semAlunos,
         paginacao.paginaAtual,
         ordenacao.campo,
@@ -244,7 +238,6 @@ const ListaTurmas = () => {
             etapa: 'todas',
             periodo: 'todos',
             semAlunos: false,
-            busca: '',
         };
         setFiltros(filtrosPadrao);
         setPaginacao((prev) => ({ ...prev, paginaAtual: 1 }));
@@ -313,17 +306,6 @@ const ListaTurmas = () => {
             {/* Filtros */}
             <div className="content-filters">
                 <div className="content-filters-group">
-                    <div className="input-group">
-                        <label className="input-label">Buscar</label>
-                        <input
-                            type="text"
-                            placeholder="Buscar por nome..."
-                            value={filtros.busca}
-                            onChange={(e) => atualizaFiltro('busca', e.target.value)}
-                            className="input-field"
-                        />
-                    </div>
-
                     <div className="input-group">
                         <label className="input-label">Status</label>
                         <select
@@ -654,17 +636,6 @@ const ListaTurmas = () => {
                             <button onClick={fechaModalFiltros} className="btn-close-filters">
                                 ×
                             </button>
-                        </div>
-
-                        <div className="input-group">
-                            <label className="input-label">Buscar</label>
-                            <input
-                                type="text"
-                                placeholder="Buscar por nome..."
-                                value={filtrosTemp.busca}
-                                onChange={(e) => atualizaFiltroTemp('busca', e.target.value)}
-                                className="input-field"
-                            />
                         </div>
 
                         <div className="input-group">

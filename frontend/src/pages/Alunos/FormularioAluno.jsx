@@ -166,7 +166,9 @@ const FormularioAluno = () => {
             errosForm.nomeResponsavel = 'Nome do responsável é obrigatório';
         }
 
-        if (camposForm.telefone.trim() && !validaTelefone(camposForm.telefone)) {
+        if (!camposForm.telefone.trim()) {
+            errosForm.telefone = 'Telefone do responsável é obrigatório';
+        } else if (!validaTelefone(camposForm.telefone)) {
             errosForm.telefone = 'Telefone inválido';
         }
 
