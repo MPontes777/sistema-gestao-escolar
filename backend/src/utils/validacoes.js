@@ -144,11 +144,11 @@ async function validaTurma(turmaId) {
  * @returns {Object} { valido: boolean, telefoneNumero: string, mensagem: string }
  */
 function validaTelefone(telefone) {
-    if (!telefone || telefone.trim() === '') {
+    if (!telefone) {
         return {
-            valido: true,
+            valido: false,
             telefoneNumero: null,
-            mensagem: null,
+            mensagem: 'Telefone é obrigatório',
         };
     }
 

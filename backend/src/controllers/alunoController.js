@@ -261,7 +261,7 @@ const criaAluno = async (req, res) => {
         const { nome, email, cpf, dataNascimento, telefone, nomeResponsavel, endereco, turmaId } = req.body;
 
         // Valida campos obrigatórios
-        if (!nome || !cpf || !dataNascimento || !telefone || !nomeResponsavel) {
+        if (!nome || !cpf || !dataNascimento || !nomeResponsavel) {
             return res.status(400).json({
                 mensagem:
                     'Campos obrigatórios: Nome, CPF, Data de Nascimento, Nome do Responsável e Telefone do Responsável',
@@ -386,7 +386,7 @@ const editaAluno = async (req, res) => {
         const { nome, email, cpf, dataNascimento, telefone, nomeResponsavel, endereco, turmaId } = req.body;
 
         // Valida campos obrigatórios
-        if (!nome || !cpf || !dataNascimento || !telefone || !nomeResponsavel) {
+        if (!nome || !cpf || !dataNascimento || !nomeResponsavel) {
             return res.status(400).json({
                 mensagem:
                     'Campos obrigatórios: Nome, CPF, Data de Nascimento, Nome do Responsável e Telefone do Responsável',
