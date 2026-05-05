@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('./prisma');
 // const { cpf: cpfValidator } = require('cpf-cnpj-validator');
 
 /**

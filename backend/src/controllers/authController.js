@@ -1,8 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../utils/prisma');
 const bcrypt = require('bcrypt');
 const { generateToken } = require('../utils/jwt');
-
-const prisma = new PrismaClient();
 
 // Autentica usuário e retorna token JWT
 async function login(req, res) {
