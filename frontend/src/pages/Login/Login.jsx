@@ -9,7 +9,7 @@ const Login = () => {
     // Estados do formulário
     const [formData, setFormData] = useState({
         email: '',
-        senha: ''
+        senha: '',
     });
 
     // Estados de controle
@@ -20,16 +20,16 @@ const Login = () => {
     // Atualiza os campos do formulário
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            [name]: value
+            [name]: value,
         }));
 
         // Limpa erro do campo quando usuário começa a digitar
         if (errors[name]) {
-            setErrors(prev => ({
+            setErrors((prev) => ({
                 ...prev,
-                [name]: ''
+                [name]: '',
             }));
         }
 
@@ -46,10 +46,10 @@ const Login = () => {
         // Valida e-mail
         if (!formData.email.trim()) {
             newErrors.email = 'O e-mail é obrigatório';
-        // /^ --> Inicia regex
-        // [^\s@]+ --> um ou mais caracteres quem não sejam epaço ou arroba (por conta da negação !)
-        // /^ --> Finaliza regex
-        // .test --> retorna true ou false
+            // /^ --> Inicia regex
+            // [^\s@]+ --> um ou mais caracteres quem não sejam epaço ou arroba (por conta da negação !)
+            // /^ --> Finaliza regex
+            // .test --> retorna true ou false
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
             newErrors.email = 'Digite um e-mail válido';
         }
@@ -57,11 +57,11 @@ const Login = () => {
         // Valida senha
         if (!formData.senha) {
             newErrors.senha = 'A senha é obrigatória';
-        // Após a fase do MVP solicitar uma senha com letras e números, pelo menos uma letra maiúscula e um caractere especial
+            // Após a fase do MVP solicitar uma senha com letras e números, pelo menos uma letra maiúscula e um caractere especial
         } else if (formData.senha.length < 8) {
             newErrors.senha = 'A senha deve ter no mínimo 8 caracteres';
         }
-        
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -84,29 +84,28 @@ const Login = () => {
             const response = await login(formData.email, formData.senha);
 
             // Salva token e dados do usuário no localStorage
-            localStorage.setItem('token', response.token);
-            localStorage.setItem('user', JSON.stringify(response.usuario));
+            localStorage.setItem('token', response.dados.token);
+            localStorage.setItem('user', JSON.stringify(response.dados.usuario));
 
             // Mensagem de sucesso
             setAlertMessage({
-                type: 'success', 
-                message: `Bem-vindo(a), ${response.usuario.nome}!`
+                type: 'success',
+                message: `Bem-vindo(a), ${response.dados.usuario.nome}!`,
             });
 
             // Aguarda 1 segundo antes de redirecionar
             setTimeout(() => {
                 // Redireciona de acordo com o perfil do usuário
-                const perfil = response.usuario.perfil?.toLowerCase();
+                const perfil = response.dados.usuario.perfil?.toLowerCase();
                 if (perfil === 'admin') {
                     navigate('/dashboard-admin');
                 } else if (perfil === 'professor') {
                     navigate('/dashboard-professor');
-                // Alterar após fase de MVP
+                    // Alterar após fase de MVP
                 } else {
                     navigate('/dashboard');
                 }
             }, 1000);
-
         } catch (error) {
             console.error('Erro ao fazer login:', error);
 
@@ -114,20 +113,20 @@ const Login = () => {
             if (error.response) {
                 // Erro vindo do servidor
                 setAlertMessage({
-                    type: 'error', 
-                    message: error.response.data.mensagem || 'Erro ao fazer login. Verifique suas credenciais.' 
+                    type: 'error',
+                    message: error.response.data.mensagem || 'Erro ao fazer login. Verifique suas credenciais.',
                 });
             } else if (error.request) {
                 // Servidor não respondeu
                 setAlertMessage({
                     type: 'error',
-                    message: 'Não foi possível conectar ao servidor. Verifique sua conexão.' 
+                    message: 'Não foi possível conectar ao servidor. Verifique sua conexão.',
                 });
             } else {
                 // Outro tipo de erro
                 setAlertMessage({
                     type: 'error',
-                    message: 'Ocorreu um erro inesperado. Tente novamente.' 
+                    message: 'Ocorreu um erro inesperado. Tente novamente.',
                 });
             }
         } finally {
@@ -145,9 +144,7 @@ const Login = () => {
 
                 {/*Mensagem de alerta para sucesso ou erro*/}
                 {alertMessage.message && (
-                    <div className={`alert alert-${alertMessage.type}`}>
-                        {alertMessage.message}
-                    </div>
+                    <div className={`alert alert-${alertMessage.type}`}>{alertMessage.message}</div>
                 )}
 
                 <form className="login-form" onSubmit={handleSubmit} /*autoComplete="off"*/>
@@ -164,9 +161,7 @@ const Login = () => {
                             className={errors.email ? 'error' : ''}
                             disabled={loading}
                         />
-                        {errors.email && (
-                            <span className="error-message">{errors.email}</span>
-                        )}
+                        {errors.email && <span className="error-message">{errors.email}</span>}
                     </div>
 
                     {/*Senha*/}
@@ -182,25 +177,19 @@ const Login = () => {
                             className={errors.senha ? 'error' : ''}
                             disabled={loading}
                         />
-                        {errors.senha && (
-                            <span className="error-message">{errors.senha}</span>
-                        )}
+                        {errors.senha && <span className="error-message">{errors.senha}</span>}
                     </div>
 
                     {/*Botão de Login*/}
-                    <button 
-                        type="submit" 
-                        className="login-button"
-                        disabled={loading}
-                    >
-                    {loading ? (
-                        <>
-                            <span className="loading-spinner"></span>
-                            Entrando...
-                        </>
-                    ) : (
-                        'Entrar'
-                    )}
+                    <button type="submit" className="login-button" disabled={loading}>
+                        {loading ? (
+                            <>
+                                <span className="loading-spinner"></span>
+                                Entrando...
+                            </>
+                        ) : (
+                            'Entrar'
+                        )}
                     </button>
                 </form>
 

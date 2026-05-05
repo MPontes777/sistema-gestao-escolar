@@ -21,7 +21,7 @@ const DashboardProfessor = () => {
 
             const response = await api.get('/dashboard/stats');
 
-            setStats(response.data);
+            setStats(response.data.dados);
         } catch (err) {
             console.error('Erro ao buscar informações:', err);
             setError('Erro ao carregar informações');

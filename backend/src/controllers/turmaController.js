@@ -256,31 +256,46 @@ async function validaCamposTurma(body, res) {
     const { anoSerieId, letra, anoLetivo, periodo } = body;
 
     if (!anoSerieId || !anoLetivo || !periodo) {
-        res.status(400).json({ mensagem: 'Campos obrigatórios: Ano/Série, Ano Letivo e Período' });
+        res.status(400).json({
+            sucesso: false,
+            mensagem: 'Campos obrigatórios: Ano/Série, Ano Letivo e Período',
+        });
         return null;
     }
 
     const resultadoAnoLetivo = validaAnoLetivo(anoLetivo);
     if (!resultadoAnoLetivo.valido) {
-        res.status(400).json({ mensagem: resultadoAnoLetivo.mensagem });
+        res.status(400).json({
+            sucesso: false,
+            mensagem: resultadoAnoLetivo.mensagem,
+        });
         return null;
     }
 
     const resultadoLetra = validaLetraTurma(letra);
     if (!resultadoLetra.valido) {
-        res.status(400).json({ mensagem: resultadoLetra.mensagem });
+        res.status(400).json({
+            sucesso: false,
+            mensagem: resultadoLetra.mensagem,
+        });
         return null;
     }
 
     const resultadoPeriodo = validaPeriodo(periodo);
     if (!resultadoPeriodo.valido) {
-        res.status(400).json({ mensagem: resultadoPeriodo.mensagem });
+        res.status(400).json({
+            sucesso: false,
+            mensagem: resultadoPeriodo.mensagem,
+        });
         return null;
     }
 
     const anoSerie = await prisma.anoSerie.findUnique({ where: { id: anoSerieId } });
     if (!anoSerie) {
-        res.status(400).json({ mensagem: 'Ano/Série não encontrado' });
+        res.status(400).json({
+            sucesso: false,
+            mensagem: 'Ano/Série não encontrado',
+        });
         return null;
     }
 
@@ -329,6 +344,7 @@ const criaTurma = async (req, res) => {
 
         if (turmaExiste) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: `Turma ${nomeCompleto} já existe`,
             });
         }
@@ -440,6 +456,7 @@ const editaTurma = async (req, res) => {
 
         if (turmaExiste) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: `Turma ${nomeCompleto} já existe`,
             });
         }

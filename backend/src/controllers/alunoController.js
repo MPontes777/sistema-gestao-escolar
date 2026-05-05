@@ -263,6 +263,7 @@ const criaAluno = async (req, res) => {
         // Valida campos obrigatórios
         if (!nome || !cpf || !dataNascimento || !nomeResponsavel) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem:
                     'Campos obrigatórios: Nome, CPF, Data de Nascimento, Nome do Responsável e Telefone do Responsável',
             });
@@ -272,6 +273,7 @@ const criaAluno = async (req, res) => {
         const resultadoCPF = validaCPF(cpf);
         if (!resultadoCPF.valido) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: resultadoCPF.mensagem,
             });
         }
@@ -281,6 +283,7 @@ const criaAluno = async (req, res) => {
         const resultadoDataNasc = validaDataNascimento(dataNascimento);
         if (!resultadoDataNasc.valido) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: resultadoDataNasc.mensagem,
             });
         }
@@ -290,6 +293,7 @@ const criaAluno = async (req, res) => {
         const resultadoTelefone = validaTelefone(telefone);
         if (!resultadoTelefone.valido) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: resultadoTelefone.mensagem,
             });
         }
@@ -299,6 +303,7 @@ const criaAluno = async (req, res) => {
         const resultadoCPFDuplicado = await validaCPFDuplicado(cpfNumero);
         if (resultadoCPFDuplicado.existe) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: resultadoCPFDuplicado.mensagem,
             });
         }
@@ -307,6 +312,7 @@ const criaAluno = async (req, res) => {
         const resultadoTurma = await validaTurma(turmaId);
         if (!resultadoTurma.valido) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: resultadoTurma.mensagem,
             });
         }
@@ -367,12 +373,14 @@ const criaAluno = async (req, res) => {
         });
 
         return res.status(201).json({
+            sucesso: true,
             mensagem: 'Aluno criado',
-            aluno: garantia,
+            dados: garantia,
         });
     } catch (error) {
         console.error('Erro ao criar aluno:', error);
         return res.status(500).json({
+            sucesso: false,
             mensagem: 'Erro ao criar aluno',
             erro: error.message,
         });
@@ -388,6 +396,7 @@ const editaAluno = async (req, res) => {
         // Valida campos obrigatórios
         if (!nome || !cpf || !dataNascimento || !nomeResponsavel) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem:
                     'Campos obrigatórios: Nome, CPF, Data de Nascimento, Nome do Responsável e Telefone do Responsável',
             });
@@ -414,6 +423,7 @@ const editaAluno = async (req, res) => {
         // Verifica se aluno existe
         if (!alunoAtual) {
             return res.status(404).json({
+                sucesso: false,
                 mensagem: 'Aluno não encontrado',
             });
         }
@@ -421,6 +431,7 @@ const editaAluno = async (req, res) => {
         // Verifica se aluno está ativo
         if (!alunoAtual.ativo) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: 'Não é possível editar um aluno inativo',
                 sugestao: 'Reative o aluno antes de editá-lo',
             });
@@ -433,6 +444,7 @@ const editaAluno = async (req, res) => {
         const resultadoCPF = validaCPF(cpf);
         if (!resultadoCPF.valido) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: resultadoCPF.mensagem,
             });
         }
@@ -442,6 +454,7 @@ const editaAluno = async (req, res) => {
             const resultadoDuplicado = await validaCPFDuplicado(cpfNumero, id);
             if (resultadoDuplicado.existe) {
                 return res.status(400).json({
+                    sucesso: false,
                     mensagem: resultadoDuplicado.mensagem,
                 });
             }
@@ -456,6 +469,7 @@ const editaAluno = async (req, res) => {
         const resultadoDataNasc = validaDataNascimento(dataNascimento);
         if (!resultadoDataNasc.valido) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: resultadoDataNasc.mensagem,
             });
         }
@@ -474,6 +488,7 @@ const editaAluno = async (req, res) => {
         const resultadoTelefone = validaTelefone(telefone);
         if (!resultadoTelefone.valido) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: resultadoTelefone.mensagem,
             });
         }
@@ -505,14 +520,6 @@ const editaAluno = async (req, res) => {
             dadosParaAtualizar.email = emailNovo;
         }
 
-        if (telefone !== alunoAtual.telefone) {
-            camposMudados.telefone = {
-                anterior: alunoAtual.telefone,
-                novo: telefone,
-            };
-            dadosParaAtualizar.telefone = telefone;
-        }
-
         if (nomeResponsavel !== alunoAtual.nomeResponsavel) {
             camposMudados.nomeResponsavel = {
                 anterior: alunoAtual.nomeResponsavel,
@@ -537,6 +544,7 @@ const editaAluno = async (req, res) => {
             const resultadoTurma = await validaTurma(turmaNova);
             if (!resultadoTurma.valido) {
                 return res.status(400).json({
+                    sucesso: false,
                     mensagem: resultadoTurma.mensagem,
                 });
             }
@@ -550,8 +558,9 @@ const editaAluno = async (req, res) => {
         // Se nada mudou, não faz update
         if (Object.keys(camposMudados).length === 0) {
             return res.status(200).json({
+                sucesso: true,
                 mensagem: 'Nenhuma alteração foi realizada',
-                aluno: alunoAtual,
+                dados: alunoAtual,
             });
         }
 
@@ -589,13 +598,17 @@ const editaAluno = async (req, res) => {
         });
 
         return res.status(200).json({
+            sucesso: true,
             mensagem: `Aluno atualizado. ${Object.keys(camposMudados).length} campo(s) alterado(s).`,
-            camposAlterados: Object.keys(camposMudados),
-            aluno: garantia,
+            dados: {
+                aluno: garantia,
+                camposAlterados: Object.keys(camposMudados),
+            },
         });
     } catch (error) {
         console.error('Erro ao editar aluno:', error);
         return res.status(500).json({
+            sucesso: false,
             mensagem: 'Erro ao editar aluno',
             erro: error.message,
         });
@@ -620,6 +633,7 @@ const inativaAluno = async (req, res) => {
 
         if (!alunoExiste) {
             return res.status(404).json({
+                sucesso: false,
                 mensagem: 'Aluno não encontrado',
             });
         }
@@ -627,6 +641,7 @@ const inativaAluno = async (req, res) => {
         // Verifica se aluno já está inativo
         if (!alunoExiste.ativo) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: 'Aluno já está inativo',
             });
         }
@@ -665,12 +680,14 @@ const inativaAluno = async (req, res) => {
         });
 
         return res.status(200).json({
+            sucesso: true,
             mensagem: 'Aluno inativado',
-            aluno: garantia,
+            dados: garantia,
         });
     } catch (error) {
         console.error('Erro ao inativar aluno:', error);
         return res.status(500).json({
+            sucesso: false,
             mensagem: 'Erro ao inativar aluno',
             erro: error.message,
         });
@@ -696,6 +713,7 @@ const reativaAluno = async (req, res) => {
 
         if (!alunoExiste) {
             return res.status(404).json({
+                sucesso: false,
                 mensagem: 'Aluno não encontrado',
             });
         }
@@ -703,6 +721,7 @@ const reativaAluno = async (req, res) => {
         // Verifica se aluno já está ativo
         if (alunoExiste.ativo) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: 'Aluno já está ativo',
             });
         }
@@ -741,12 +760,14 @@ const reativaAluno = async (req, res) => {
         });
 
         return res.status(200).json({
+            sucesso: true,
             mensagem: 'Aluno reativado',
-            aluno: garantia,
+            dados: garantia,
         });
     } catch (error) {
         console.error('Erro ao reativar aluno:', error);
         return res.status(500).json({
+            sucesso: false,
             mensagem: 'Erro ao reativar aluno',
             erro: error.message,
         });
@@ -778,6 +799,7 @@ const excluiAluno = async (req, res) => {
 
         if (!alunoExiste) {
             return res.status(404).json({
+                sucesso: false,
                 mensagem: 'Aluno não encontrado',
             });
         }
@@ -789,6 +811,7 @@ const excluiAluno = async (req, res) => {
 
         if (notasVinculadas > 0) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: `Não é possível excluir este aluno. Ele possui ${notasVinculadas} nota(s) vinculada(s).`,
                 sugestao: 'Use a opção "Inativar" ao invés de excluir',
             });
@@ -827,11 +850,13 @@ const excluiAluno = async (req, res) => {
         });
 
         return res.status(200).json({
+            sucesso: true,
             mensagem: 'Aluno excluído permanentemente',
         });
     } catch (error) {
         console.error('Erro ao excluir aluno:', error);
         return res.status(500).json({
+            sucesso: false,
             mensagem: 'Erro ao excluir aluno',
             erro: error.message,
         });
@@ -846,6 +871,7 @@ const vinculaAluno = async (req, res) => {
 
         if (!turmaId) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: 'Campo obrigatório: turmaId',
             });
         }
@@ -863,18 +889,21 @@ const vinculaAluno = async (req, res) => {
 
         if (!alunoAtual) {
             return res.status(404).json({
+                sucesso: false,
                 mensagem: 'Aluno não encontrado',
             });
         }
 
         if (!alunoAtual.ativo) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: 'Não é possível vincular um aluno inativo a uma turma',
             });
         }
 
         if (alunoAtual.turmaId === turmaId) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: 'Aluno já está vinculado a esta turma',
             });
         }
@@ -882,6 +911,7 @@ const vinculaAluno = async (req, res) => {
         const resultadoTurma = await validaTurma(turmaId);
         if (!resultadoTurma.valido) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: resultadoTurma.mensagem,
             });
         }
@@ -909,12 +939,14 @@ const vinculaAluno = async (req, res) => {
         });
 
         return res.status(200).json({
+            sucesso: true,
             mensagem: 'Aluno vinculado à turma',
-            aluno: garantia,
+            dados: garantia,
         });
     } catch (error) {
         console.error('Erro ao vincular aluno:', error);
         return res.status(500).json({
+            sucesso: false,
             mensagem: 'Erro ao vincular aluno',
             erro: error.message,
         });
@@ -939,18 +971,21 @@ const desvinculaAluno = async (req, res) => {
 
         if (!alunoAtual) {
             return res.status(404).json({
+                sucesso: false,
                 mensagem: 'Aluno não encontrado',
             });
         }
 
         if (!alunoAtual.ativo) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: 'Não é possível desvincular um aluno inativo',
             });
         }
 
         if (!alunoAtual.turmaId) {
             return res.status(400).json({
+                sucesso: false,
                 mensagem: 'Aluno já está sem turma',
             });
         }
@@ -978,12 +1013,14 @@ const desvinculaAluno = async (req, res) => {
         });
 
         return res.status(200).json({
+            sucesso: true,
             mensagem: 'Aluno desvinculado da turma com sucesso',
-            aluno: garantia,
+            dados: garantia,
         });
     } catch (error) {
         console.error('Erro ao desvincular aluno:', error);
         return res.status(500).json({
+            sucesso: false,
             mensagem: 'Erro ao desvincular aluno',
             erro: error.message,
         });

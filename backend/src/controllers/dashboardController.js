@@ -16,22 +16,22 @@ const getStats = async (req, res) => {
                 where: {
                     professorId: userId,
                     professor: { ativo: true },
-                    turma: { ativo: true }
+                    turma: { ativo: true },
                 },
-                include: { turma: true }
+                include: { turma: true },
             });
 
-            const turmasIds = [...new Set(AtribProf.map(pt => pt.turma.id))];
+            const turmasIds = [...new Set(AtribProf.map((pt) => pt.turma.id))];
             totalTurmas = turmasIds.length;
-        
+
             //
             if (turmasIds.length > 0) {
                 const alunosTurma = await prisma.aluno.findMany({
                     where: {
                         turmaId: { in: turmasIds },
-                        ativo: true
+                        ativo: true,
                     },
-                    select: { id: true }
+                    select: { id: true },
                 });
                 totalAlunos = alunosTurma.length;
             }
@@ -39,13 +39,13 @@ const getStats = async (req, res) => {
 
         if (perfil === 'admin') {
             totalAlunos = await prisma.aluno.count({
-                where: { ativo: true }
+                where: { ativo: true },
             });
             totalTurmas = await prisma.turma.count({
-                where: { ativo: true }
+                where: { ativo: true },
             });
             totalProfessores = await prisma.usuario.count({
-                where: { perfil: 'professor', ativo: true }
+                where: { perfil: 'professor', ativo: true },
             });
         }
 
@@ -54,10 +54,18 @@ const getStats = async (req, res) => {
             stats.totalProfessores = totalProfessores;
         }
 
-        res.status(200).json(stats);
+        res.status(200).json({
+            sucesso: true,
+            mensagem: 'Estatísticas do dashboard',
+            dados: stats,
+        });
     } catch (error) {
         console.error('Erro ao buscar estatísticas do dashboard:', error);
-        res.status(500).json({ mensagem: 'Erro ao buscar estatísticas do dashboard' });
+        res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro ao buscar estatísticas do dashboard',
+            erro: error.message,
+        });
     }
 };
 

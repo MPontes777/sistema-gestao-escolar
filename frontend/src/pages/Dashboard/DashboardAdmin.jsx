@@ -22,7 +22,7 @@ const DashboardAdmin = () => {
 
             const response = await api.get('/dashboard/stats');
 
-            setStats(response.data);
+            setStats(response.data.dados);
         } catch (err) {
             console.error('Erro ao buscar informações:', err);
             setError('Erro ao carregar informações');
@@ -63,9 +63,7 @@ const DashboardAdmin = () => {
                 </div>
                 <div className="card-stats">
                     <p className="card-stats-label">Total de Professores</p>
-                    <p className="card-stats-number">
-                        {stats.totalProfessores}
-                    </p>
+                    <p className="card-stats-number">{stats.totalProfessores}</p>
                 </div>
             </div>
         </div>
