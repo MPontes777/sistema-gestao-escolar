@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const alunoRoutes = require('./routes/alunoRoutes');
 const turmaRoutes = require('./routes/turmaRoutes');
+const planejamentoRoutes = require('./routes/planejamentoRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000; // Porta do server em produção ou 3000 como porta local
@@ -18,6 +19,7 @@ app.use('/auth', authRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/alunos', alunoRoutes);
 app.use('/turmas', turmaRoutes);
+app.use('/planejamentos', planejamentoRoutes);
 
 // Rota teste
 app.get('/', (req, res) => {

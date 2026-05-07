@@ -274,6 +274,29 @@ function validaPeriodo(periodo) {
     };
 }
 
+/**
+ * Valida data
+ * @param {string} data - Data a ser validada
+ * @returns {Object} { valido: boolean, dataObj: Date, mensagem: string }
+ */
+function validaData(data) {
+    const dataObj = new Date(data);
+
+    if (isNaN(dataObj.getTime())) {
+        return {
+            valido: false,
+            dataObj: null,
+            mensagem: 'Data inválida',
+        };
+    }
+
+    return {
+        valido: true,
+        dataObj,
+        mensagem: null,
+    };
+}
+
 module.exports = {
     validaCPF,
     validaDataNascimento,
@@ -284,4 +307,5 @@ module.exports = {
     validaAnoLetivo,
     validaLetraTurma,
     validaPeriodo,
+    validaData,
 };
