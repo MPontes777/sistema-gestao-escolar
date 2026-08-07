@@ -8,6 +8,7 @@ router.use(authenticateToken);
 
 // Método GET
 router.get('/', planejamentoController.listaPlanejamentos);
+router.get('/vinculos', planejamentoController.listaVinculos);
 router.get('/:id', planejamentoController.buscaPlanejamentoId);
 
 // Método POST

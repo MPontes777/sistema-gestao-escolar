@@ -1,5 +1,6 @@
 const prisma = require('../utils/prisma');
 const { validaData } = require('../utils/validacoes');
+const { buscaVinculos } = require('../utils/vinculos');
 
 // Valida campos obrigatórios do planejamento
 async function validaCamposPlanejamento(body, res) {
@@ -87,6 +88,34 @@ async function validaCamposPlanejamento(body, res) {
 
     return { turmaId, disciplinaId, titulo: titulo.trim(), data: resultadoData.dataObj, turma, disciplina };
 }
+
+// Lista vínculos professor-turma-disciplina
+const listaVinculos = async (req, res) => {
+    try {
+        const resultado = await buscaVinculos(req.user);
+
+        if (resultado.erro) {
+            return res.status(resultado.status).json({
+                sucesso: false,
+                mensagem: resultado.mensagem,
+            });
+        }
+
+        return res.status(200).json({
+            sucesso: true,
+            mensagem: 'Vínculos listados',
+            dados: resultado.dados,
+        });
+    } catch (error) {
+        console.error('Erro ao listar vínculos:', error);
+
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro ao listar vínculos',
+            erro: error.message,
+        });
+    }
+};
 
 // Lista planejamentos
 const listaPlanejamentos = async (req, res) => {
@@ -578,6 +607,7 @@ const excluiPlanejamento = async (req, res) => {
 };
 
 module.exports = {
+    listaVinculos,
     listaPlanejamentos,
     buscaPlanejamentoId,
     criaPlanejamento,
