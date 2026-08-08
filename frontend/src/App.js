@@ -9,6 +9,7 @@ import FormularioAluno from './pages/Alunos/FormularioAluno';
 import ListaTurmas from './pages/Turmas/ListaTurmas';
 import FormularioTurma from './pages/Turmas/FormularioTurma';
 import DetalhesTurma from './pages/Turmas/DetalhesTurma';
+import ListaPlanejamentos from './pages/Planejamentos/ListaPlanejamentos';
 import { isAuthenticated, getUser } from './services/api';
 
 // Protege rotas privadas
@@ -77,6 +78,18 @@ function App() {
                         <PrivateRoute>
                             <Layout>
                                 <DashboardProfessor />
+                            </Layout>
+                        </PrivateRoute>
+                    }
+                />
+
+                {/* Rota privada - Lista de Planejamentos */}
+                <Route
+                    path="/planejamentos"
+                    element={
+                        <PrivateRoute>
+                            <Layout>
+                                <ListaPlanejamentos />
                             </Layout>
                         </PrivateRoute>
                     }

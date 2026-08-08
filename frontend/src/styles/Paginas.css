@@ -746,6 +746,15 @@ input:checked + .slider:after {
         background-color: #7f8c8d;
     }
 
+    .btn-mobile-faltas {
+        background-color: #f39c12;
+        color: #ffffff;
+    }
+
+    .btn-mobile-faltas:active {
+        background-color: #e67e22;
+    }
+
     .page-container {
         flex-direction: column;
         gap: 15px;
@@ -820,6 +829,40 @@ input:checked + .slider:after {
     .table-professores-turma td[data-label='Disciplina'] {
         display: inline;
         float: right;
+    }
+
+    /* Ajustes no ListaPlanejamentos */
+    .table-planejamentos td[data-label='Data'] {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        padding: 0;
+        font-size: 12px;
+        font-weight: 600;
+        color: #7f8c8d;
+    }
+
+    .table-planejamentos td[data-label='Título'] {
+        font-size: 20px;
+        font-weight: 600;
+        padding-top: 20px;
+        display: block;
+    }
+
+    .table-planejamentos td[data-label='Turma'],
+    .table-planejamentos td[data-label='Disciplina'],
+    .table-planejamentos td[data-label='Professor'] {
+        display: block;
+        font-size: 14px;
+        padding-top: 4px;
+    }
+
+    .table-planejamentos td[data-label='Turma']::before,
+    .table-planejamentos td[data-label='Disciplina']::before,
+    .table-planejamentos td[data-label='Professor']::before {
+        content: attr(data-label) ': ';
+        font-weight: 600;
+        color: #7f8c8d;
     }
 
     /* Modal de vincular */

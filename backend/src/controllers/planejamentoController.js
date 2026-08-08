@@ -138,12 +138,10 @@ const listaPlanejamentos = async (req, res) => {
         const { perfil, id: userId } = req.user;
 
         switch (perfil) {
-            case 'admin':
-                // Admin vê todos os planejamentos
+            case 'admin': // Admin vê todos os planejamentos
                 break;
 
-            case 'professor':
-                // Professor vê apenas seus próprios planejamentos
+            case 'professor': // Professor vê apenas seus próprios planejamentos
                 where.professorId = userId;
                 break;
 
@@ -183,14 +181,25 @@ const listaPlanejamentos = async (req, res) => {
         }
 
         // Ordenação
-        const camposValidos = ['data', 'titulo', 'createdAt'];
-        const ordenacao = camposValidos.includes(ordenarPor) ? ordenarPor : 'data';
         const direcao = ordem === 'asc' ? 'asc' : 'desc';
+
+        let orderBy = {};
+        if (ordenarPor === 'turma') {
+            orderBy.turma = { nomeCompleto: direcao };
+        } else if (ordenarPor === 'disciplina') {
+            orderBy.disciplina = { nome: direcao };
+        } else if (ordenarPor === 'professor') {
+            orderBy.professor = { nome: direcao };
+        } else if (['data', 'titulo', 'createdAt'].includes(ordenarPor)) {
+            orderBy[ordenarPor] = direcao;
+        } else {
+            orderBy.data = direcao;
+        }
 
         // Consulta planejamentos filtrados
         const planejamentos = await prisma.planejamento.findMany({
             where,
-            orderBy: { [ordenacao]: direcao },
+            orderBy,
             take: parseInt(limit),
             skip: parseInt(offset),
             include: {
@@ -263,12 +272,10 @@ const buscaPlanejamentoId = async (req, res) => {
         const { perfil, id: userId } = req.user;
 
         switch (perfil) {
-            case 'admin':
-                // Admin acessa qualquer planejamento
+            case 'admin': // Admin acessa qualquer planejamento
                 break;
 
-            case 'professor':
-                // Professor acessa apenas seus próprios planejamentos
+            case 'professor': // Professor acessa apenas seus próprios planejamentos
                 if (planejamento.professorId !== userId) {
                     return res.status(403).json({
                         sucesso: false,
