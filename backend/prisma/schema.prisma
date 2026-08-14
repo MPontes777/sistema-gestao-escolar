@@ -168,6 +168,7 @@ model Planejamento {
   turmaId       String
   disciplinaId  String
   titulo        String
+  numeroAulas   Int      @default(1)
   objetivo      String?
   conteudo      String?
   metodologia   String?
