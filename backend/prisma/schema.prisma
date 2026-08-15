@@ -169,6 +169,7 @@ model Planejamento {
   disciplinaId  String
   titulo        String
   numeroAulas   Int      @default(1)
+  bimestre      Int      @default(1)
   objetivo      String?
   conteudo      String?
   metodologia   String?
