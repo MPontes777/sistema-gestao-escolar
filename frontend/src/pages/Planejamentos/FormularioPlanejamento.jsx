@@ -13,6 +13,7 @@ const FormularioPlanejamento = () => {
         disciplinaId: '',
         titulo: '',
         numeroAulas: '1',
+        bimestre: '1',
         objetivo: '',
         conteudo: '',
         metodologia: '',
@@ -23,6 +24,7 @@ const FormularioPlanejamento = () => {
     const [loadingForm, setLoadingForm] = useState(false);
     const [errors, setErrors] = useState({});
     const [mensagem, setMensagem] = useState({ tipo: '', texto: '' });
+    const [prevUpdate, setPrevUpdate] = useState(null);
 
     // Carrega dados
     useEffect(() => {
@@ -32,7 +34,7 @@ const FormularioPlanejamento = () => {
         }
     }, [id]);
 
-    // Carrega vínculos professor-turma-disciplina (turmas/disciplinas que o professor leciona)
+    // Carrega vínculos professor-turma-disciplina que o professor leciona
     const carregaVinculos = async () => {
         try {
             const response = await api.get('/planejamentos/vinculos');
@@ -46,7 +48,7 @@ const FormularioPlanejamento = () => {
         }
     };
 
-    // Carrega dados do planejamento (edição)
+    // Carrega dados do planejamento
     const carregaDadosPlanejamento = async () => {
         setLoadingForm(true);
         try {
@@ -55,16 +57,20 @@ const FormularioPlanejamento = () => {
 
             const dataFormatada = planejamento.data ? new Date(planejamento.data).toISOString().split('T')[0] : '';
 
-            setCamposForm({
+            const dadosForm = {
                 turmaId: planejamento.turmaId || '',
                 disciplinaId: planejamento.disciplinaId || '',
                 titulo: planejamento.titulo || '',
                 numeroAulas: planejamento.numeroAulas?.toString() || '1',
+                bimestre: planejamento.bimestre?.toString() || '1',
                 objetivo: planejamento.objetivo || '',
                 conteudo: planejamento.conteudo || '',
                 metodologia: planejamento.metodologia || '',
                 data: dataFormatada,
-            });
+            };
+
+            setCamposForm(dadosForm);
+            setPrevUpdate(dadosForm);
         } catch (error) {
             console.error('Erro ao carregar planejamento:', error);
             setMensagem({
@@ -76,7 +82,7 @@ const FormularioPlanejamento = () => {
         }
     };
 
-    // Disciplinas válidas para a turma selecionada (cascata)
+    // Disciplinas válidas para a turma selecionada
     const disciplinasDisponiveis = () => {
         if (!camposForm.turmaId) return vinculos.disciplinas;
 
@@ -85,6 +91,18 @@ const FormularioPlanejamento = () => {
             .map((v) => v.disciplinaId);
 
         return vinculos.disciplinas.filter((d) => disciplinaIds.includes(d.id));
+    };
+
+    // Verifica se houve mudança nos dados
+    const verificaMudanca = () => {
+        if (!prevUpdate) return true;
+
+        for (let campo in camposForm) {
+            if (camposForm[campo] !== prevUpdate[campo]) {
+                return true;
+            }
+        }
+        return false;
     };
 
     // Valida todos os campos do formulário
@@ -108,6 +126,11 @@ const FormularioPlanejamento = () => {
         const numeroAulasInt = parseInt(camposForm.numeroAulas);
         if (!camposForm.numeroAulas || isNaN(numeroAulasInt) || numeroAulasInt < 1 || numeroAulasInt > 6) {
             errosForm.numeroAulas = 'Número de aulas deve ser um valor entre 1 e 6';
+        }
+
+        const bimestreInt = parseInt(camposForm.bimestre);
+        if (!camposForm.bimestre || isNaN(bimestreInt) || bimestreInt < 1 || bimestreInt > 4) {
+            errosForm.bimestre = 'Bimestre é obrigatório';
         }
 
         if (!camposForm.data) {
@@ -155,15 +178,24 @@ const FormularioPlanejamento = () => {
             return;
         }
 
+        if (editaPlanejamento && !verificaMudanca()) {
+            setMensagem({
+                tipo: 'error',
+                texto: 'Nenhuma alteração foi feita',
+            });
+            return;
+        }
+
         setLoading(true);
         setMensagem({ tipo: '', texto: '' });
 
         try {
             if (editaPlanejamento) {
-                // Edição: turma/disciplina não são enviadas (não editáveis)
+                // Turma e Disciplina não são enviadas (não é possível editar)
                 const dadosParaEnviar = {
                     titulo: camposForm.titulo.trim(),
                     numeroAulas: parseInt(camposForm.numeroAulas),
+                    bimestre: parseInt(camposForm.bimestre),
                     objetivo: camposForm.objetivo.trim(),
                     conteudo: camposForm.conteudo.trim(),
                     metodologia: camposForm.metodologia.trim(),
@@ -181,6 +213,7 @@ const FormularioPlanejamento = () => {
                     disciplinaId: camposForm.disciplinaId,
                     titulo: camposForm.titulo.trim(),
                     numeroAulas: parseInt(camposForm.numeroAulas),
+                    bimestre: parseInt(camposForm.bimestre),
                     objetivo: camposForm.objetivo.trim(),
                     conteudo: camposForm.conteudo.trim(),
                     metodologia: camposForm.metodologia.trim(),
@@ -248,163 +281,191 @@ const FormularioPlanejamento = () => {
             {/* Formulário */}
             <div className="form-container">
                 <form onSubmit={enviaFormulario} noValidate>
-                    <div className="form-grid-2">
-                        {/* Turma */}
-                        <div className="input-group">
-                            <label className="input-label input-label-required" htmlFor="turmaId">
-                                Turma
-                            </label>
-                            <select
-                                id="turmaId"
-                                name="turmaId"
-                                className={`input-select ${errors.turmaId ? 'input-error' : ''} ${
-                                    !camposForm.turmaId ? 'placeholder-active' : ''
-                                }`}
-                                value={camposForm.turmaId}
-                                onChange={mudaFormulario}
-                                disabled={loading || editaPlanejamento || semVinculos}
-                            >
-                                <option value="">Selecione a turma...</option>
-                                {vinculos.turmas.map((turma) => (
-                                    <option key={turma.id} value={turma.id}>
-                                        {turma.nomeCompleto}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.turmaId && <span className="message-error">{errors.turmaId}</span>}
+                    <div className="form-rows">
+                        {/* Linha 1 */}
+                        <div className="form-grid-2">
+                            {/* Título */}
+                            <div className="input-group">
+                                <label className="input-label input-label-required" htmlFor="titulo">
+                                    Título da Aula
+                                </label>
+                                <input
+                                    type="text"
+                                    id="titulo"
+                                    name="titulo"
+                                    className={`input-field ${errors.titulo ? 'input-error' : ''}`}
+                                    placeholder="Ex: Introdução à Álgebra"
+                                    value={camposForm.titulo}
+                                    onChange={mudaFormulario}
+                                    maxLength="200"
+                                    disabled={loading || semVinculos}
+                                />
+                                {errors.titulo && <span className="message-error">{errors.titulo}</span>}
+                            </div>
+
+                            {/* Data */}
+                            <div className="input-group">
+                                <label className="input-label input-label-required" htmlFor="data">
+                                    Data
+                                </label>
+                                <input
+                                    type="date"
+                                    id="data"
+                                    name="data"
+                                    className={`input-field ${errors.data ? 'input-error' : ''}`}
+                                    value={camposForm.data}
+                                    onChange={mudaFormulario}
+                                    disabled={loading || semVinculos}
+                                />
+                                {errors.data && <span className="message-error">{errors.data}</span>}
+                            </div>
                         </div>
 
-                        {/* Disciplina */}
-                        <div className="input-group">
-                            <label className="input-label input-label-required" htmlFor="disciplinaId">
-                                Disciplina
-                            </label>
-                            <select
-                                id="disciplinaId"
-                                name="disciplinaId"
-                                className={`input-select ${errors.disciplinaId ? 'input-error' : ''} ${
-                                    !camposForm.disciplinaId ? 'placeholder-active' : ''
-                                }`}
-                                value={camposForm.disciplinaId}
-                                onChange={mudaFormulario}
-                                disabled={loading || editaPlanejamento || semVinculos || !camposForm.turmaId}
-                            >
-                                <option value="">Selecione a disciplina...</option>
-                                {disciplinasDisponiveis().map((disciplina) => (
-                                    <option key={disciplina.id} value={disciplina.id}>
-                                        {disciplina.nome}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.disciplinaId && <span className="message-error">{errors.disciplinaId}</span>}
+                        {/* Linha 2 */}
+                        <div className="form-grid-4">
+                            {/* Bimestre */}
+                            <div className="input-group">
+                                <label className="input-label input-label-required" htmlFor="bimestre">
+                                    Bimestre
+                                </label>
+                                <select
+                                    id="bimestre"
+                                    name="bimestre"
+                                    className={`input-select ${errors.bimestre ? 'input-error' : ''}`}
+                                    value={camposForm.bimestre}
+                                    onChange={mudaFormulario}
+                                    disabled={loading || semVinculos}
+                                >
+                                    <option value="1">1º Bimestre</option>
+                                    <option value="2">2º Bimestre</option>
+                                    <option value="3">3º Bimestre</option>
+                                    <option value="4">4º Bimestre</option>
+                                </select>
+                                {errors.bimestre && <span className="message-error">{errors.bimestre}</span>}
+                            </div>
+
+                            {/* Turma */}
+                            <div className="input-group">
+                                <label className="input-label input-label-required" htmlFor="turmaId">
+                                    Turma
+                                </label>
+                                <select
+                                    id="turmaId"
+                                    name="turmaId"
+                                    className={`input-select ${errors.turmaId ? 'input-error' : ''} ${
+                                        !camposForm.turmaId ? 'placeholder-active' : ''
+                                    }`}
+                                    value={camposForm.turmaId}
+                                    onChange={mudaFormulario}
+                                    disabled={loading || editaPlanejamento || semVinculos}
+                                >
+                                    <option value="">Selecione a turma...</option>
+                                    {vinculos.turmas.map((turma) => (
+                                        <option key={turma.id} value={turma.id}>
+                                            {turma.nomeCompleto}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.turmaId && <span className="message-error">{errors.turmaId}</span>}
+                            </div>
+
+                            {/* Disciplina */}
+                            <div className="input-group">
+                                <label className="input-label input-label-required" htmlFor="disciplinaId">
+                                    Disciplina
+                                </label>
+                                <select
+                                    id="disciplinaId"
+                                    name="disciplinaId"
+                                    className={`input-select ${errors.disciplinaId ? 'input-error' : ''} ${
+                                        !camposForm.disciplinaId ? 'placeholder-active' : ''
+                                    }`}
+                                    value={camposForm.disciplinaId}
+                                    onChange={mudaFormulario}
+                                    disabled={loading || editaPlanejamento || semVinculos || !camposForm.turmaId}
+                                >
+                                    <option value="">Selecione a disciplina...</option>
+                                    {disciplinasDisponiveis().map((disciplina) => (
+                                        <option key={disciplina.id} value={disciplina.id}>
+                                            {disciplina.nome}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.disciplinaId && <span className="message-error">{errors.disciplinaId}</span>}
+                            </div>
+
+                            {/* Número de Aulas */}
+                            <div className="input-group">
+                                <label className="input-label input-label-required" htmlFor="numeroAulas">
+                                    Aulas
+                                </label>
+                                <input
+                                    type="number"
+                                    id="numeroAulas"
+                                    name="numeroAulas"
+                                    className={`input-field ${errors.numeroAulas ? 'input-error' : ''}`}
+                                    placeholder="Ex: 1"
+                                    value={camposForm.numeroAulas}
+                                    onChange={mudaFormulario}
+                                    step="1"
+                                    min="1"
+                                    max="6"
+                                    disabled={loading || semVinculos}
+                                />
+                                {errors.numeroAulas && <span className="message-error">{errors.numeroAulas}</span>}
+                            </div>
                         </div>
 
-                        {/* Título */}
+                        {/* Objetivo */}
                         <div className="input-group">
-                            <label className="input-label input-label-required" htmlFor="titulo">
-                                Título
+                            <label className="input-label" htmlFor="objetivo">
+                                Objetivo
                             </label>
-                            <input
-                                type="text"
-                                id="titulo"
-                                name="titulo"
-                                className={`input-field ${errors.titulo ? 'input-error' : ''}`}
-                                placeholder="Ex: Introdução às frações"
-                                value={camposForm.titulo}
+                            <textarea
+                                id="objetivo"
+                                name="objetivo"
+                                className="input-field"
+                                placeholder="Objetivo da aula (opcional)"
+                                value={camposForm.objetivo}
                                 onChange={mudaFormulario}
-                                maxLength="200"
+                                rows="3"
                                 disabled={loading || semVinculos}
                             />
-                            {errors.titulo && <span className="message-error">{errors.titulo}</span>}
                         </div>
 
-                        {/* Número de Aulas */}
+                        {/* Conteúdo */}
                         <div className="input-group">
-                            <label className="input-label input-label-required" htmlFor="numeroAulas">
-                                Número de Aulas
+                            <label className="input-label" htmlFor="conteudo">
+                                Conteúdo
                             </label>
-                            <input
-                                type="number"
-                                id="numeroAulas"
-                                name="numeroAulas"
-                                className={`input-field ${errors.numeroAulas ? 'input-error' : ''}`}
-                                value={camposForm.numeroAulas}
+                            <textarea
+                                id="conteudo"
+                                name="conteudo"
+                                className="input-field"
+                                placeholder="Conteúdo abordado (opcional)"
+                                value={camposForm.conteudo}
                                 onChange={mudaFormulario}
-                                step="1"
-                                min="1"
-                                max="6"
+                                rows="3"
                                 disabled={loading || semVinculos}
                             />
-                            {errors.numeroAulas && <span className="message-error">{errors.numeroAulas}</span>}
                         </div>
 
-                        {/* Data */}
+                        {/* Metodologia */}
                         <div className="input-group">
-                            <label className="input-label input-label-required" htmlFor="data">
-                                Data
+                            <label className="input-label" htmlFor="metodologia">
+                                Metodologia
                             </label>
-                            <input
-                                type="date"
-                                id="data"
-                                name="data"
-                                className={`input-field ${errors.data ? 'input-error' : ''}`}
-                                value={camposForm.data}
+                            <textarea
+                                id="metodologia"
+                                name="metodologia"
+                                className="input-field"
+                                placeholder="Metodologia utilizada (opcional)"
+                                value={camposForm.metodologia}
                                 onChange={mudaFormulario}
+                                rows="3"
                                 disabled={loading || semVinculos}
                             />
-                            {errors.data && <span className="message-error">{errors.data}</span>}
                         </div>
-                    </div>
-
-                    {/* Objetivo */}
-                    <div className="input-group">
-                        <label className="input-label" htmlFor="objetivo">
-                            Objetivo
-                        </label>
-                        <textarea
-                            id="objetivo"
-                            name="objetivo"
-                            className="input-field"
-                            placeholder="Objetivo da aula (opcional)"
-                            value={camposForm.objetivo}
-                            onChange={mudaFormulario}
-                            rows="3"
-                            disabled={loading || semVinculos}
-                        />
-                    </div>
-
-                    {/* Conteúdo */}
-                    <div className="input-group">
-                        <label className="input-label" htmlFor="conteudo">
-                            Conteúdo
-                        </label>
-                        <textarea
-                            id="conteudo"
-                            name="conteudo"
-                            className="input-field"
-                            placeholder="Conteúdo abordado (opcional)"
-                            value={camposForm.conteudo}
-                            onChange={mudaFormulario}
-                            rows="3"
-                            disabled={loading || semVinculos}
-                        />
-                    </div>
-
-                    {/* Metodologia */}
-                    <div className="input-group">
-                        <label className="input-label" htmlFor="metodologia">
-                            Metodologia
-                        </label>
-                        <textarea
-                            id="metodologia"
-                            name="metodologia"
-                            className="input-field"
-                            placeholder="Metodologia utilizada (opcional)"
-                            value={camposForm.metodologia}
-                            onChange={mudaFormulario}
-                            rows="3"
-                            disabled={loading || semVinculos}
-                        />
                     </div>
 
                     <div className="form-action">

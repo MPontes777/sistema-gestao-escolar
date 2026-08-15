@@ -258,6 +258,20 @@ input:checked + .slider:after {
     gap: 30px;
 }
 
+/* Grid com 4 colunas */
+.form-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+}
+
+/* Espaçamento entre blocos no formulário */
+.form-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
 /* Botões do formulário */
 .form-action {
     display: flex;
@@ -613,6 +627,10 @@ input:checked + .slider:after {
     }
 
     .form-grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .form-grid-4 {
         grid-template-columns: 1fr;
     }
 
