@@ -4,7 +4,7 @@ const { buscaVinculos } = require('../utils/vinculos');
 
 // Valida campos obrigatórios do planejamento
 async function validaCamposPlanejamento(body, res) {
-    const { turmaId, disciplinaId, titulo, data, numeroAulas } = body;
+    const { turmaId, disciplinaId, titulo, data, numeroAulas, bimestre } = body;
 
     // Campos obrigatórios
     if (
@@ -14,11 +14,14 @@ async function validaCamposPlanejamento(body, res) {
         !data ||
         numeroAulas === undefined ||
         numeroAulas === null ||
-        numeroAulas === ''
+        numeroAulas === '' ||
+        bimestre === undefined ||
+        bimestre === null ||
+        bimestre === ''
     ) {
         res.status(400).json({
             sucesso: false,
-            mensagem: 'Campos obrigatórios: Turma, Disciplina, Título, Data e Número de Aulas',
+            mensagem: 'Campos obrigatórios: Turma, Disciplina, Título, Data, Número de Aulas e Bimestre',
         });
         return null;
     }
@@ -104,6 +107,16 @@ async function validaCamposPlanejamento(body, res) {
         return null;
     }
 
+    // Valida bimestre
+    const bimestreInt = parseInt(bimestre);
+    if (isNaN(bimestreInt) || bimestreInt < 1 || bimestreInt > 4) {
+        res.status(400).json({
+            sucesso: false,
+            mensagem: 'Bimestre deve ser um valor entre 1 e 4',
+        });
+        return null;
+    }
+
     return {
         turmaId,
         disciplinaId,
@@ -112,6 +125,7 @@ async function validaCamposPlanejamento(body, res) {
         turma,
         disciplina,
         numeroAulas: numeroAulasInt,
+        bimestre: bimestreInt,
     };
 }
 
@@ -350,7 +364,7 @@ const criaPlanejamento = async (req, res) => {
         const campos = await validaCamposPlanejamento(req.body, res);
         if (!campos) return;
 
-        const { turmaId, disciplinaId, titulo, data, turma, disciplina, numeroAulas } = campos;
+        const { turmaId, disciplinaId, titulo, data, turma, disciplina, numeroAulas, bimestre } = campos;
         const { objetivo, conteudo, metodologia } = req.body;
         const { id: userId } = req.user;
 
@@ -379,6 +393,7 @@ const criaPlanejamento = async (req, res) => {
                     metodologia: metodologia?.trim() || null,
                     data,
                     numeroAulas,
+                    bimestre,
                 },
                 include: {
                     professor: { select: { id: true, nome: true } },
@@ -402,6 +417,7 @@ const criaPlanejamento = async (req, res) => {
                         disciplinaId: novoPlanejamento.disciplinaId,
                         data: novoPlanejamento.data,
                         numeroAulas: novoPlanejamento.numeroAulas,
+                        bimestre: novoPlanejamento.bimestre,
                     },
                 },
             });
@@ -461,7 +477,7 @@ const editaPlanejamento = async (req, res) => {
             });
         }
 
-        const { titulo, objetivo, conteudo, metodologia, data, numeroAulas } = req.body;
+        const { titulo, objetivo, conteudo, metodologia, data, numeroAulas, bimestre } = req.body;
 
         // Valida data
         let resultadoData;
@@ -487,6 +503,18 @@ const editaPlanejamento = async (req, res) => {
             }
         }
 
+        // Valida bimestre
+        let bimestreInt;
+        if (bimestre !== undefined) {
+            bimestreInt = parseInt(bimestre);
+            if (isNaN(bimestreInt) || bimestreInt < 1 || bimestreInt > 4) {
+                return res.status(400).json({
+                    sucesso: false,
+                    mensagem: 'Bimestre deve ser um valor entre 1 e 4',
+                });
+            }
+        }
+
         // Detecta alterações
         const semAlteracao =
             (titulo === undefined || titulo?.trim() === planejamentoExiste.titulo) &&
@@ -494,7 +522,8 @@ const editaPlanejamento = async (req, res) => {
             (conteudo === undefined || (conteudo?.trim() || null) === planejamentoExiste.conteudo) &&
             (metodologia === undefined || (metodologia?.trim() || null) === planejamentoExiste.metodologia) &&
             (data === undefined || new Date(data).toISOString() === planejamentoExiste.data.toISOString()) &&
-            (numeroAulas === undefined || numeroAulasInt === planejamentoExiste.numeroAulas);
+            (numeroAulas === undefined || numeroAulasInt === planejamentoExiste.numeroAulas) &&
+            (bimestre === undefined || bimestreInt === planejamentoExiste.bimestre);
 
         if (semAlteracao) {
             return res.status(200).json({
@@ -528,6 +557,7 @@ const editaPlanejamento = async (req, res) => {
         if (metodologia !== undefined) dadosAtualizacao.metodologia = metodologia?.trim() || null;
         if (data !== undefined) dadosAtualizacao.data = resultadoData.dataObj;
         if (numeroAulas !== undefined) dadosAtualizacao.numeroAulas = numeroAulasInt;
+        if (bimestre !== undefined) dadosAtualizacao.bimestre = bimestreInt;
 
         // Atualiza com auditoria
         const garantia = await prisma.$transaction(async (tx) => {
@@ -556,6 +586,7 @@ const editaPlanejamento = async (req, res) => {
                         metodologia: planejamentoExiste.metodologia,
                         data: planejamentoExiste.data,
                         numeroAulas: planejamentoExiste.numeroAulas,
+                        bimestre: planejamentoExiste.bimestre,
                     },
                     valorNovo: dadosAtualizacao,
                 },
@@ -635,6 +666,7 @@ const excluiPlanejamento = async (req, res) => {
                         disciplinaId: planejamentoExiste.disciplinaId,
                         data: planejamentoExiste.data,
                         numeroAulas: planejamentoExiste.numeroAulas,
+                        bimestre: planejamentoExiste.bimestre,
                     },
                     valorNovo: null,
                 },
