@@ -10,6 +10,7 @@ import ListaTurmas from './pages/Turmas/ListaTurmas';
 import FormularioTurma from './pages/Turmas/FormularioTurma';
 import DetalhesTurma from './pages/Turmas/DetalhesTurma';
 import ListaPlanejamentos from './pages/Planejamentos/ListaPlanejamentos';
+import FormularioPlanejamento from './pages/Planejamentos/FormularioPlanejamento';
 import { isAuthenticated, getUser } from './services/api';
 
 // Protege rotas privadas
@@ -40,6 +41,20 @@ const AdminRoute = ({ children }) => {
     const user = getUser();
     if (user?.perfil !== 'admin') {
         return <Navigate to="/dashboard-professor" />;
+    }
+
+    return children;
+};
+
+// Protege rotas privadas para professor
+const ProfessorRoute = ({ children }) => {
+    if (!isAuthenticated()) {
+        return <Navigate to="/login" />;
+    }
+
+    const user = getUser();
+    if (user?.perfil !== 'professor') {
+        return <Navigate to="/dashboard-admin" />;
     }
 
     return children;
@@ -171,6 +186,30 @@ function App() {
                                 <DetalhesTurma />
                             </Layout>
                         </AdminRoute>
+                    }
+                />
+
+                {/* Rotas privadas para professor */}
+                {/* Rota privada - Cadastrar Planejamento */}
+                <Route
+                    path="/planejamentos/cadastro"
+                    element={
+                        <ProfessorRoute>
+                            <Layout>
+                                <FormularioPlanejamento />
+                            </Layout>
+                        </ProfessorRoute>
+                    }
+                />
+                {/* Rota privada - Editar Planejamento */}
+                <Route
+                    path="/planejamentos/:id"
+                    element={
+                        <ProfessorRoute>
+                            <Layout>
+                                <FormularioPlanejamento />
+                            </Layout>
+                        </ProfessorRoute>
                     }
                 />
 
