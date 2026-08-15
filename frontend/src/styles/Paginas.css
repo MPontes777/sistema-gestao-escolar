@@ -867,17 +867,21 @@ input:checked + .slider:after {
         display: block;
     }
 
+    .table-planejamentos td[data-label='Bimestre'],
     .table-planejamentos td[data-label='Turma'],
     .table-planejamentos td[data-label='Disciplina'],
-    .table-planejamentos td[data-label='Professor'] {
+    .table-planejamentos td[data-label='Professor'],
+    .table-planejamentos td[data-label='Aulas'] {
         display: block;
         font-size: 14px;
         padding-top: 4px;
     }
 
+    .table-planejamentos td[data-label='Bimestre']::before,
     .table-planejamentos td[data-label='Turma']::before,
     .table-planejamentos td[data-label='Disciplina']::before,
-    .table-planejamentos td[data-label='Professor']::before {
+    .table-planejamentos td[data-label='Professor']::before,
+    .table-planejamentos td[data-label='Aulas']::before {
         content: attr(data-label) ': ';
         font-weight: 600;
         color: #7f8c8d;

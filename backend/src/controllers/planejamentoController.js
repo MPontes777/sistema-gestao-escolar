@@ -163,6 +163,7 @@ const listaPlanejamentos = async (req, res) => {
         const {
             turmaId,
             disciplinaId,
+            bimestre,
             dataInicio,
             dataFim,
             titulo,
@@ -202,6 +203,11 @@ const listaPlanejamentos = async (req, res) => {
             where.disciplinaId = disciplinaId;
         }
 
+        // Filtro por bimestre
+        if (bimestre) {
+            where.bimestre = parseInt(bimestre);
+        }
+
         // Filtro por título (busca parcial)
         if (titulo) {
             where.titulo = { contains: titulo, mode: 'insensitive' };
@@ -230,7 +236,7 @@ const listaPlanejamentos = async (req, res) => {
             orderBy.disciplina = { nome: direcao };
         } else if (ordenarPor === 'professor') {
             orderBy.professor = { nome: direcao };
-        } else if (['data', 'titulo', 'createdAt'].includes(ordenarPor)) {
+        } else if (['data', 'titulo', 'createdAt', 'bimestre'].includes(ordenarPor)) {
             orderBy[ordenarPor] = direcao;
         } else {
             orderBy.data = direcao;

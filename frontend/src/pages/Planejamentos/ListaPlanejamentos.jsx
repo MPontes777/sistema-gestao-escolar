@@ -18,6 +18,7 @@ const ListaPlanejamentos = () => {
         turmaId: '',
         disciplinaId: '',
         titulo: '',
+        bimestre: '',
         dataInicio: '',
         dataFim: '',
     });
@@ -27,6 +28,7 @@ const ListaPlanejamentos = () => {
         turmaId: '',
         disciplinaId: '',
         titulo: '',
+        bimestre: '',
         dataInicio: '',
         dataFim: '',
     });
@@ -177,7 +179,14 @@ const ListaPlanejamentos = () => {
 
     // Limpa todos os filtros
     const limpaFiltros = () => {
-        const filtrosPadrao = { turmaId: '', disciplinaId: '', titulo: '', dataInicio: '', dataFim: '' };
+        const filtrosPadrao = {
+            turmaId: '',
+            disciplinaId: '',
+            titulo: '',
+            bimestre: '',
+            dataInicio: '',
+            dataFim: '',
+        };
         setFiltros(filtrosPadrao);
         setFiltrosTemp(filtrosPadrao);
         setTituloInput('');
@@ -201,6 +210,7 @@ const ListaPlanejamentos = () => {
             if (filtros.turmaId) params.turmaId = filtros.turmaId;
             if (filtros.disciplinaId) params.disciplinaId = filtros.disciplinaId;
             if (filtros.titulo.trim()) params.titulo = filtros.titulo.trim();
+            if (filtros.bimestre) params.bimestre = filtros.bimestre;
             if (filtros.dataInicio) params.dataInicio = filtros.dataInicio;
             if (filtros.dataFim) params.dataFim = filtros.dataFim;
 
@@ -241,6 +251,7 @@ const ListaPlanejamentos = () => {
         filtros.turmaId,
         filtros.disciplinaId,
         filtros.titulo,
+        filtros.bimestre,
         filtros.dataInicio,
         filtros.dataFim,
         paginacao.paginaAtual,
@@ -359,6 +370,32 @@ const ListaPlanejamentos = () => {
             <div className="content-filters">
                 <div className="content-filters-group">
                     <div className="input-group">
+                        <label className="input-label">Título</label>
+                        <input
+                            type="text"
+                            placeholder="Buscar por título..."
+                            value={tituloInput}
+                            onChange={(e) => setTituloInput(e.target.value)}
+                            className="input-field"
+                        />
+                    </div>
+
+                    <div className="input-group">
+                        <label className="input-label">Bimestre</label>
+                        <select
+                            value={filtros.bimestre}
+                            onChange={(e) => atualizaFiltro('bimestre', e.target.value)}
+                            className={`input-select ${filtros.bimestre === '' ? 'placeholder-active' : ''}`}
+                        >
+                            <option value="">Todos os Bimestres</option>
+                            <option value="1">1º Bimestre</option>
+                            <option value="2">2º Bimestre</option>
+                            <option value="3">3º Bimestre</option>
+                            <option value="4">4º Bimestre</option>
+                        </select>
+                    </div>
+
+                    <div className="input-group">
                         <label className="input-label">Turma</label>
                         <select
                             value={filtros.turmaId}
@@ -390,17 +427,6 @@ const ListaPlanejamentos = () => {
                                 </option>
                             ))}
                         </select>
-                    </div>
-
-                    <div className="input-group">
-                        <label className="input-label">Título</label>
-                        <input
-                            type="text"
-                            placeholder="Buscar por título..."
-                            value={tituloInput}
-                            onChange={(e) => setTituloInput(e.target.value)}
-                            className="input-field"
-                        />
                     </div>
 
                     <div className="input-group">
@@ -464,6 +490,10 @@ const ListaPlanejamentos = () => {
                                                 Título
                                                 {setaOrdenacao('titulo')}
                                             </th>
+                                            <th className="sort-header" onClick={() => mudaOrdenacao('bimestre')}>
+                                                Bimestre
+                                                {setaOrdenacao('bimestre')}
+                                            </th>
                                             <th className="sort-header" onClick={() => mudaOrdenacao('turma')}>
                                                 Turma
                                                 {setaOrdenacao('turma')}
@@ -476,6 +506,7 @@ const ListaPlanejamentos = () => {
                                                 Professor
                                                 {setaOrdenacao('professor')}
                                             </th>
+                                            <th>Aulas</th>
                                             <th>Ações</th>
                                         </tr>
                                     </thead>
@@ -486,9 +517,11 @@ const ListaPlanejamentos = () => {
                                                 <td data-label="Título" style={{ fontWeight: '600' }}>
                                                     {p.titulo}
                                                 </td>
+                                                <td data-label="Bimestre">{p.bimestre}º Bimestre</td>
                                                 <td data-label="Turma">{p.turma?.nomeCompleto}</td>
                                                 <td data-label="Disciplina">{p.disciplina?.nome}</td>
                                                 <td data-label="Professor">{p.professor?.nome}</td>
+                                                <td data-label="Aulas">{p.numeroAulas}</td>
                                                 <td data-label="Ações">
                                                     {/* Botões Desktop */}
                                                     <div className="table-action">
@@ -630,6 +663,32 @@ const ListaPlanejamentos = () => {
                         </div>
 
                         <div className="input-group">
+                            <label className="input-label">Título</label>
+                            <input
+                                type="text"
+                                placeholder="Buscar por título..."
+                                value={filtrosTemp.titulo}
+                                onChange={(e) => atualizaFiltroTemp('titulo', e.target.value)}
+                                className="input-field"
+                            />
+                        </div>
+
+                        <div className="input-group">
+                            <label className="input-label">Bimestre</label>
+                            <select
+                                value={filtrosTemp.bimestre}
+                                onChange={(e) => atualizaFiltroTemp('bimestre', e.target.value)}
+                                className={`input-select ${filtrosTemp.bimestre === '' ? 'placeholder-active' : ''}`}
+                            >
+                                <option value="">Todos os Bimestres</option>
+                                <option value="1">1º Bimestre</option>
+                                <option value="2">2º Bimestre</option>
+                                <option value="3">3º Bimestre</option>
+                                <option value="4">4º Bimestre</option>
+                            </select>
+                        </div>
+
+                        <div className="input-group">
                             <label className="input-label">Turma</label>
                             <select
                                 value={filtrosTemp.turmaId}
@@ -663,17 +722,6 @@ const ListaPlanejamentos = () => {
                                     </option>
                                 ))}
                             </select>
-                        </div>
-
-                        <div className="input-group">
-                            <label className="input-label">Título</label>
-                            <input
-                                type="text"
-                                placeholder="Buscar por título..."
-                                value={filtrosTemp.titulo}
-                                onChange={(e) => atualizaFiltroTemp('titulo', e.target.value)}
-                                className="input-field"
-                            />
                         </div>
 
                         <div className="input-group">
@@ -717,6 +765,9 @@ const ListaPlanejamentos = () => {
                             <strong>Data:</strong> {formataData(modalVisualizar.planejamento.data)}
                         </p>
                         <p>
+                            <strong>Bimestre:</strong> {modalVisualizar.planejamento.bimestre}º Bimestre
+                        </p>
+                        <p>
                             <strong>Turma:</strong> {modalVisualizar.planejamento.turma?.nomeCompleto}
                         </p>
                         <p>
@@ -724,6 +775,9 @@ const ListaPlanejamentos = () => {
                         </p>
                         <p>
                             <strong>Professor:</strong> {modalVisualizar.planejamento.professor?.nome}
+                        </p>
+                        <p>
+                            <strong>Aulas:</strong> {modalVisualizar.planejamento.numeroAulas}
                         </p>
                         {modalVisualizar.planejamento.objetivo && (
                             <p>
