@@ -89,7 +89,8 @@ model Aluno {
 
   // Relacionamentos (Se a turma for deletada, o aluno não deixa de existir)
   turma  Turma?  @relation(fields: [turmaId], references: [id], onDelete: SetNull)
-  notas  Nota[]
+  notas   Nota[]
+  faltas  Falta[]
 
   @@map("alunos")
 }
@@ -181,8 +182,28 @@ model Planejamento {
   professor   Usuario     @relation(fields: [professorId], references: [id], onDelete: Cascade)
   turma       Turma       @relation(fields: [turmaId], references: [id], onDelete: Cascade)
   disciplina  Disciplina  @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+  faltas      Falta[]
 
   @@map("planejamentos")
+}
+
+// Tabela Falta
+model Falta {
+  id                String   @id @default(uuid())
+  alunoId           String
+  planejamentoId    String
+  quantidadeFaltas  Int      @default(0)
+  justificativa     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+ // Relacionamentos (se aluno ou planejamento forem deletados, a falta também é deletada)
+  aluno         Aluno         @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  planejamento  Planejamento  @relation(fields: [planejamentoId], references: [id], onDelete: Cascade)
+
+  // Um aluno tem apenas um registro de falta por planejamento
+  @@unique([alunoId, planejamentoId])
+  @@map("faltas")
 }
 
 // Tabela auditoria log
