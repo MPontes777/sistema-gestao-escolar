@@ -337,8 +337,214 @@ const criaFaltas = async (req, res) => {
     }
 };
 
+// Edita justificativa de uma falta (apenas admin)
+const editaFalta = async (req, res) => {
+    try {
+        // Controle de acesso
+        switch (req.user.perfil) {
+            case 'admin':
+                break;
+            default:
+                return res.status(403).json({
+                    sucesso: false,
+                    mensagem: 'Apenas o administrador pode justificar faltas',
+                });
+        }
+
+        const { id } = req.params;
+        const { justificativa } = req.body;
+        const { id: userId, nome: userNome } = req.user;
+
+        // Verifica se a falta existe
+        const faltaExiste = await prisma.falta.findUnique({
+            where: { id },
+            include: {
+                aluno: {
+                    select: {
+                        nome: true,
+                    },
+                },
+                planejamento: {
+                    select: {
+                        titulo: true,
+                    },
+                },
+            },
+        });
+
+        if (!faltaExiste) {
+            return res.status(404).json({
+                sucesso: false,
+                mensagem: 'Falta não encontrada',
+            });
+        }
+
+        // Valida justificativa
+        if (justificativa !== undefined && justificativa !== null && justificativa.trim().length > 500) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'Justificativa deve ter no máximo 500 caracteres',
+            });
+        }
+
+        // Vazio ou null = remover justificativa (não é erro)
+        const justificativaNova = justificativa?.trim() || null;
+
+        // Detecta alteração
+        if (justificativaNova === faltaExiste.justificativa) {
+            return res.status(200).json({
+                sucesso: true,
+                mensagem: 'Nenhuma alteração detectada',
+                dados: faltaExiste,
+            });
+        }
+
+        // Atualiza com auditoria
+        const faltaAtualizada = await prisma.$transaction(async (tx) => {
+            const atualizada = await tx.falta.update({
+                where: { id },
+                data: { justificativa: justificativaNova },
+            });
+
+            await tx.auditLog.create({
+                data: {
+                    usuarioId: userId,
+                    usuarioNome: userNome,
+                    tabela: 'faltas',
+                    registroId: id,
+                    operacao: 'UPDATE',
+                    descricao: `Justificativa da falta de "${faltaExiste.aluno.nome}" no planejamento "${faltaExiste.planejamento.titulo}" atualizada por ${userNome}`,
+                    valorAnterior: faltaExiste.justificativa,
+                    valorNovo: justificativaNova,
+                },
+            });
+
+            return atualizada;
+        });
+
+        return res.status(200).json({
+            sucesso: true,
+            mensagem: 'Justificativa atualizada com sucesso',
+            dados: faltaAtualizada,
+        });
+    } catch (error) {
+        console.error('Erro ao editar falta:', error);
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro ao editar falta',
+            erro: error.message,
+        });
+    }
+};
+
+// Calcula o aproveitamento de um aluno em uma disciplina
+const calculaAproveitamento = async (req, res) => {
+    try {
+        const { alunoId, disciplinaId, bimestre } = req.query;
+        const { perfil, id: userId } = req.user;
+
+        if (!alunoId || !disciplinaId) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'Informe alunoId e disciplinaId para calcular o aproveitamento',
+            });
+        }
+
+        // Verifica se o aluno existe
+        const aluno = await prisma.aluno.findUnique({
+            where: {
+                id: alunoId,
+            },
+            select: {
+                id: true,
+                nome: true,
+                turmaId: true,
+            },
+        });
+
+        if (!aluno) {
+            return res.status(404).json({
+                sucesso: false,
+                mensagem: 'Aluno não encontrado',
+            });
+        }
+
+        // Monta filtro dos planejamentos
+        const wherePlanejamento = {
+            turmaId: aluno.turmaId,
+            disciplinaId,
+        };
+
+        switch (perfil) {
+            case 'admin': // Admin considera todos os planejamentos da turma
+                break;
+
+            case 'professor': // Professor considera apenas os próprios planejamentos
+                wherePlanejamento.professorId = userId;
+                break;
+
+            default:
+                return res.status(403).json({
+                    sucesso: false,
+                    mensagem: 'Acesso não autorizado',
+                });
+        }
+
+        if (bimestre) wherePlanejamento.bimestre = parseInt(bimestre);
+
+        // Busca planejamentos
+        const planejamentos = await prisma.planejamento.findMany({
+            where: wherePlanejamento,
+            select: {
+                id: true,
+                numeroAulas: true,
+                faltas: {
+                    where: {
+                        alunoId,
+                    },
+                    select: {
+                        quantidadeFaltas: true,
+                    },
+                },
+            },
+        });
+
+        const totalAulas = planejamentos.reduce((soma, p) => soma + p.numeroAulas, 0);
+        const totalFaltas = planejamentos.reduce((soma, p) => {
+            const falta = p.faltas[0];
+            return soma + (falta ? falta.quantidadeFaltas : 0);
+        }, 0);
+
+        const percentualPresenca =
+            totalAulas === 0 ? null : Number((((totalAulas - totalFaltas) / totalAulas) * 100).toFixed(1));
+
+        return res.status(200).json({
+            sucesso: true,
+            mensagem: 'Aproveitamento calculado',
+            dados: {
+                aluno: {
+                    id: aluno.id,
+                    nome: aluno.nome,
+                },
+                totalAulas,
+                totalFaltas,
+                percentualPresenca,
+            },
+        });
+    } catch (error) {
+        console.error('Erro ao calcular aproveitamento:', error);
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro ao calcular aproveitamento',
+            erro: error.message,
+        });
+    }
+};
+
 module.exports = {
     listaVinculos,
     listaFaltas,
     criaFaltas,
+    editaFalta,
+    calculaAproveitamento,
 };
