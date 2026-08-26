@@ -9,6 +9,7 @@ const turmaRoutes = require('./routes/turmaRoutes');
 const planejamentoRoutes = require('./routes/planejamentoRoutes');
 const disciplinaRoutes = require('./routes/disciplinaRoutes');
 const faltaRoutes = require('./routes/faltaRoutes');
+const notaRoutes = require('./routes/notaRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000; // Porta do server em produção ou 3000 como porta local
@@ -24,6 +25,7 @@ app.use('/turmas', turmaRoutes);
 app.use('/planejamentos', planejamentoRoutes);
 app.use('/disciplinas', disciplinaRoutes);
 app.use('/faltas', faltaRoutes);
+app.use('/notas', notaRoutes);
 
 // Rota teste
 app.get('/', (req, res) => {
