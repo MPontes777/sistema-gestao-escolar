@@ -141,15 +141,18 @@ enum Periodo {
 
 // Tabela Nota
 model Nota {
-  id            String   @id @default(uuid())
-  alunoId       String
-  disciplinaId  String
-  bimestre1     Float?
-  bimestre2     Float?
-  bimestre3     Float?
-  bimestre4     Float?
-  mediaFinal    Float?   // (bim1 + bim2 + bim3 + bim4) / 4
-  criterio      String?  // Aprovado, Reprovado ou Cursando, caso o bim4 esteja em branco
+  id               String   @id @default(uuid())
+  alunoId          String
+  disciplinaId     String
+  bimestre1        Float?
+  bimestre2        Float?
+  bimestre3        Float?
+  bimestre4        Float?
+  mediaParcial     Float?   // Média dos bimestres (some quando os 4 estiverem preenchidos)
+  mediaFinal       Float?   // Média dos bimestres (apenas quando os 4 estiverem preenchidos)
+  resultado        String?  // Aprovado, Reprovado ou Cursando (caso algum bimestre esteja em branco)
+  motivoAprovacao  String?  // Recuperação, Conselho de Classe ou Outro
+  motivoDescricao  String?  // Obrigatório quando motivoAprovacao for Outro
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
