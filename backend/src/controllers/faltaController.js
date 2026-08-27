@@ -1,5 +1,6 @@
 const prisma = require('../utils/prisma');
 const { buscaVinculos } = require('../utils/vinculos');
+const { calculaPresenca } = require('../utils/aproveitamento');
 
 // Lista vínculos professor-turma-disciplina (mesmo padrão de Planejamentos)
 const listaVinculos = async (req, res) => {
@@ -492,31 +493,41 @@ const calculaAproveitamento = async (req, res) => {
 
         if (bimestre) wherePlanejamento.bimestre = parseInt(bimestre);
 
+        let totalAulas, totalFaltas, percentualPresenca;
+
         // Busca planejamentos
-        const planejamentos = await prisma.planejamento.findMany({
-            where: wherePlanejamento,
-            select: {
-                id: true,
-                numeroAulas: true,
-                faltas: {
-                    where: {
-                        alunoId,
-                    },
-                    select: {
-                        quantidadeFaltas: true,
+        if (wherePlanejamento.professorId || wherePlanejamento.bimestre) {
+            const planejamentos = await prisma.planejamento.findMany({
+                where: wherePlanejamento,
+                select: {
+                    id: true,
+                    numeroAulas: true,
+                    faltas: {
+                        where: {
+                            alunoId,
+                        },
+                        select: {
+                            quantidadeFaltas: true,
+                        },
                     },
                 },
-            },
-        });
+            });
 
-        const totalAulas = planejamentos.reduce((soma, p) => soma + p.numeroAulas, 0);
-        const totalFaltas = planejamentos.reduce((soma, p) => {
-            const falta = p.faltas[0];
-            return soma + (falta ? falta.quantidadeFaltas : 0);
-        }, 0);
+            totalAulas = planejamentos.reduce((soma, p) => soma + p.numeroAulas, 0);
+            totalFaltas = planejamentos.reduce((soma, p) => {
+                const falta = p.faltas[0];
+                return soma + (falta ? falta.quantidadeFaltas : 0);
+            }, 0);
 
-        const percentualPresenca =
-            totalAulas === 0 ? null : Number((((totalAulas - totalFaltas) / totalAulas) * 100).toFixed(1));
+            percentualPresenca =
+                totalAulas === 0 ? null : Number((((totalAulas - totalFaltas) / totalAulas) * 100).toFixed(1));
+        } else {
+            ({ totalAulas, totalFaltas, percentualPresenca } = await calculaPresenca({
+                alunoId,
+                turmaId: aluno.turmaId,
+                disciplinaId,
+            }));
+        }
 
         return res.status(200).json({
             sucesso: true,
