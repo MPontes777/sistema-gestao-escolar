@@ -13,4 +13,7 @@ router.get('/vinculos', notaController.listaVinculos);
 // Método POST
 router.post('/', notaController.criaNotas);
 
+// Método PUT
+router.put('/:id', notaController.editaMotivoAprovacao);
+
 module.exports = router;
