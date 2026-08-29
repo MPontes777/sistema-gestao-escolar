@@ -11,7 +11,7 @@ import FormularioTurma from './pages/Turmas/FormularioTurma';
 import DetalhesTurma from './pages/Turmas/DetalhesTurma';
 import ListaPlanejamentos from './pages/Planejamentos/ListaPlanejamentos';
 import FormularioPlanejamento from './pages/Planejamentos/FormularioPlanejamento';
-import ListaNotasFaltas from './pages/NotasFaltas/ListaNotasFaltas';
+import ListaNotasFaltas from './pages/NotasFaltas/ListaTurmasNotasFaltas';
 import { isAuthenticated, getUser } from './services/api';
 
 // Protege rotas privadas

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api, { getUser } from '../../services/api';
 
-const ListaNotasFaltas = () => {
+const ListaTurmasNotasFaltas = () => {
     const navigate = useNavigate();
     const usuario = getUser();
 
@@ -185,4 +185,4 @@ const ListaNotasFaltas = () => {
     );
 };
 
-export default ListaNotasFaltas;
+export default ListaTurmasNotasFaltas;
