@@ -83,6 +83,135 @@
     color: #2c3e50;
 }
 
+/* Notas e Faltas - Seleção de Turma (cards) */
+.titulo-com-seletor {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.disciplina-select {
+    border: 1px solid #dcdfe3;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 15px;
+    color: #2c3e50;
+    background-color: #ffffff;
+    min-width: 160px;
+    cursor: pointer;
+}
+
+.disciplina-select:disabled {
+    color: #95a5a6;
+    background-color: #f4f6f7;
+    border-color: #ecf0f1;
+    cursor: not-allowed;
+}
+
+.turmas-resumo-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    margin-top: 10px;
+    max-width: 1200px;
+}
+
+.card-turma {
+    flex: 0 0 380px;
+    max-width: 380px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.card-turma:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.card-turma-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.card-turma-header h3 {
+    margin: 0 0 4px 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.turma-etapa {
+    margin: 0;
+    font-size: 14px;
+    color: #7f8c8d;
+}
+
+.card-turma-body {
+    padding: 24px;
+    display: flex;
+    justify-content: center;
+    gap: 60px;
+    flex: 1;
+}
+
+.stat-block {
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 15px;
+    color: #7f8c8d;
+    margin-bottom: 6px;
+}
+
+.stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.stat-value.media-boa {
+    color: #27ae60;
+}
+
+.stat-value.media-ruim {
+    color: #e74c3c;
+}
+
+.stat-value.media-vazia {
+    color: #bdc3c7;
+    font-size: 22px;
+}
+
+.card-turma-footer {
+    padding: 16px 24px 24px;
+}
+
+.btn-lancar {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: #3498db;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-lancar:hover {
+    background-color: #2980b9;
+}
+
 /* Tabelas (Listas com ações) */
 .table-container {
     width: 100%;
@@ -626,6 +755,16 @@ input:checked + .slider:after {
         font-size: 28px;
     }
 
+    .turmas-resumo-container {
+        max-width: 100%;
+        gap: 20px;
+    }
+
+    .card-turma {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+
     .form-grid-2 {
         grid-template-columns: 1fr;
     }
@@ -922,5 +1061,13 @@ input:checked + .slider:after {
 
     .card-stats-number {
         font-size: 24px;
+    }
+
+    .card-turma-header h3 {
+        font-size: 17px;
+    }
+
+    .stat-value {
+        font-size: 22px;
     }
 }

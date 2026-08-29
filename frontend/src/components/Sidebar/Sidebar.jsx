@@ -13,14 +13,14 @@ const Sidebar = () => {
             { path: '/dashboard-admin', label: 'Dashboard', icon: '📊' },
             { path: '/alunos', label: 'Alunos', icon: '👥' },
             { path: '/turmas', label: 'Turmas', icon: '🏫' },
-            { path: '/notas', label: 'Notas', icon: '📝' },
+            { path: '/notas-faltas', label: 'Notas e Faltas', icon: '📝' },
             { path: '/planejamentos', label: 'Planejamentos', icon: '📅' },
         ],
         professor: [
             { path: '/dashboard-professor', label: 'Dashboard', icon: '📊' },
-            { path: '/notas', label: 'Notas', icon: '📝' },
+            { path: '/notas-faltas', label: 'Notas e Faltas', icon: '📝' },
             { path: '/planejamentos', label: 'Planejamentos', icon: '📅' },
-        ]
+        ],
     };
 
     // Muda o menu baseado no perfil
@@ -34,7 +34,9 @@ const Sidebar = () => {
                         <li key={item.path} className="sidebar-menu-item">
                             <NavLink
                                 to={item.path}
-                                className={({ isActive }) => isActive ? 'sidebar-link sidebar-link-active' : 'sidebar-link'}
+                                className={({ isActive }) =>
+                                    isActive ? 'sidebar-link sidebar-link-active' : 'sidebar-link'
+                                }
                             >
                                 <span className="sidebar-icon">{item.icon}</span>
                                 <span className="sidebar-label">{item.label}</span>
