@@ -9,6 +9,7 @@ router.use(authenticateToken);
 // Método GET
 router.get('/', notaController.listaNotas);
 router.get('/vinculos', notaController.listaVinculos);
+router.get('/resumo-turmas', notaController.listaResumoTurmas);
 
 // Método POST
 router.post('/', notaController.criaNotas);

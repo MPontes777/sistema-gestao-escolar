@@ -63,6 +63,112 @@ const listaVinculos = async (req, res) => {
     }
 };
 
+// Lista resumo de turmas vinculadas a uma disciplina
+const listaResumoTurmas = async (req, res) => {
+    try {
+        const { disciplinaId } = req.query;
+
+        if (!disciplinaId) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'disciplinaId é obrigatório',
+            });
+        }
+
+        const resultado = await buscaVinculos(req.user);
+
+        if (resultado.erro) {
+            return res.status(resultado.status).json({
+                sucesso: false,
+                mensagem: resultado.mensagem,
+            });
+        }
+
+        const { vinculos } = resultado.dados;
+
+        // Turmas vinculadas a essa disciplina
+        const turmaIdsValidos = [
+            ...new Set(vinculos.filter((v) => v.disciplinaId === disciplinaId).map((v) => v.turmaId)),
+        ];
+
+        if (turmaIdsValidos.length === 0) {
+            return res.status(200).json({
+                sucesso: true,
+                mensagem: 'Resumo de turmas listado',
+                dados: [],
+            });
+        }
+
+        const turmas = await prisma.turma.findMany({
+            where: {
+                id: {
+                    in: turmaIdsValidos,
+                },
+            },
+            select: {
+                id: true,
+                nomeCompleto: true,
+                anoSerie: {
+                    select: {
+                        etapa: true,
+                    },
+                },
+                alunos: {
+                    where: {
+                        ativo: true,
+                    },
+                    select: {
+                        id: true,
+                        notas: {
+                            where: {
+                                disciplinaId,
+                            },
+                            select: {
+                                mediaFinal: true,
+                                mediaParcial: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        const resumo = turmas.map((turma) => {
+            const medias = turma.alunos
+                .map((aluno) => {
+                    const nota = aluno.notas[0];
+                    if (!nota) return null;
+                    return nota.mediaFinal ?? nota.mediaParcial ?? null;
+                })
+                .filter((v) => v !== null);
+
+            const mediaGeral =
+                medias.length > 0 ? Number((medias.reduce((soma, v) => soma + v, 0) / medias.length).toFixed(1)) : null;
+
+            return {
+                turmaId: turma.id,
+                nomeCompleto: turma.nomeCompleto,
+                etapa: turma.anoSerie.etapa,
+                totalAlunos: turma.alunos.length,
+                mediaGeral,
+            };
+        });
+
+        return res.status(200).json({
+            sucesso: true,
+            mensagem: 'Resumo de turmas listado',
+            dados: resumo,
+        });
+    } catch (error) {
+        console.error('Erro ao listar resumo de turmas:', error);
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro ao listar resumo de turmas',
+            erro: error.message,
+        });
+    }
+};
+
 // Lista notas
 const listaNotas = async (req, res) => {
     try {
@@ -562,6 +668,7 @@ const editaMotivoAprovacao = async (req, res) => {
 
 module.exports = {
     listaVinculos,
+    listaResumoTurmas,
     listaNotas,
     criaNotas,
     editaMotivoAprovacao,
