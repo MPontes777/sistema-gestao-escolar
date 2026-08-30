@@ -11,7 +11,7 @@ import FormularioTurma from './pages/Turmas/FormularioTurma';
 import DetalhesTurma from './pages/Turmas/DetalhesTurma';
 import ListaPlanejamentos from './pages/Planejamentos/ListaPlanejamentos';
 import FormularioPlanejamento from './pages/Planejamentos/FormularioPlanejamento';
-import ListaNotasFaltas from './pages/NotasFaltas/ListaTurmasNotasFaltas';
+import ListaTurmasNotasFaltas from './pages/NotasFaltas/ListaTurmasNotasFaltas';
 import { isAuthenticated, getUser } from './services/api';
 
 // Protege rotas privadas
@@ -113,11 +113,11 @@ function App() {
 
                 {/* Rota privada - Lista de Notas e Faltas (Turmas) */}
                 <Route
-                    path="/notas-faltas"
+                    path="/turmas-notas-faltas"
                     element={
                         <PrivateRoute>
                             <Layout>
-                                <ListaNotasFaltas />
+                                <ListaTurmasNotasFaltas />
                             </Layout>
                         </PrivateRoute>
                     }

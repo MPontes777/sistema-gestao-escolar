@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api, { getUser } from '../../services/api';
+import api from '../../services/api';
 
 const ListaTurmasNotasFaltas = () => {
     const navigate = useNavigate();
-    const usuario = getUser();
 
     // Estados
     const [vinculos, setVinculos] = useState({ turmas: [], disciplinas: [], vinculos: [] });
@@ -77,7 +76,7 @@ const ListaTurmasNotasFaltas = () => {
 
     // Navega para a tela de lançamento (lista de alunos da turma)
     const navegaParaLancamento = (turmaId) => {
-        navigate(`/notas-faltas/${turmaId}?disciplinaId=${disciplinaId}`);
+        navigate(`/alunos-notas-faltas/${turmaId}?disciplinaId=${disciplinaId}`);
     };
 
     // Só permite trocar quando o professor leciona mais de uma disciplina
@@ -88,7 +87,7 @@ const ListaTurmasNotasFaltas = () => {
             {/* Header */}
             <div className="content-header">
                 <div className="titulo-com-seletor">
-                    <h1 className="content-title">Lançar Notas e Faltas</h1>
+                    <h1 className="content-title">Notas e Faltas</h1>
 
                     <select
                         value={disciplinaId}
@@ -172,7 +171,7 @@ const ListaTurmasNotasFaltas = () => {
                                             onClick={() => navegaParaLancamento(turma.turmaId)}
                                             className="btn-lancar"
                                         >
-                                            {usuario?.perfil === 'admin' ? 'Lançar Notas' : 'Lançar Notas e Faltas'}
+                                            Selecionar Turma
                                         </button>
                                     </div>
                                 </div>

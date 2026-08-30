@@ -13,12 +13,12 @@ const Sidebar = () => {
             { path: '/dashboard-admin', label: 'Dashboard', icon: '📊' },
             { path: '/alunos', label: 'Alunos', icon: '👥' },
             { path: '/turmas', label: 'Turmas', icon: '🏫' },
-            { path: '/notas-faltas', label: 'Notas e Faltas', icon: '📝' },
+            { path: '/turmas-notas-faltas', label: 'Notas e Faltas', icon: '📝' },
             { path: '/planejamentos', label: 'Planejamentos', icon: '📅' },
         ],
         professor: [
             { path: '/dashboard-professor', label: 'Dashboard', icon: '📊' },
-            { path: '/notas-faltas', label: 'Notas e Faltas', icon: '📝' },
+            { path: '/turmas-notas-faltas', label: 'Notas e Faltas', icon: '📝' },
             { path: '/planejamentos', label: 'Planejamentos', icon: '📅' },
         ],
     };
