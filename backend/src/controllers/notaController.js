@@ -169,6 +169,134 @@ const listaResumoTurmas = async (req, res) => {
     }
 };
 
+// Lista alunos de uma turma+disciplina, com notas e presença
+const listaAlunosNotasFaltas = async (req, res) => {
+    try {
+        const { turmaId, disciplinaId } = req.query;
+
+        if (!turmaId || !disciplinaId) {
+            return res.status(400).json({
+                sucesso: false,
+                mensagem: 'turmaId e disciplinaId são obrigatórios',
+            });
+        }
+
+        const resultado = await buscaVinculos(req.user);
+
+        if (resultado.erro) {
+            return res.status(resultado.status).json({
+                sucesso: false,
+                mensagem: resultado.mensagem,
+            });
+        }
+
+        const { vinculos } = resultado.dados;
+
+        const vinculoValido = vinculos.some((v) => v.turmaId === turmaId && v.disciplinaId === disciplinaId);
+
+        if (!vinculoValido) {
+            return res.status(403).json({
+                sucesso: false,
+                mensagem: 'Você não tem acesso a essa turma/disciplina',
+            });
+        }
+
+        const turma = await prisma.turma.findUnique({
+            where: { id: turmaId },
+            select: {
+                nomeCompleto: true,
+                anoSerie: {
+                    select: {
+                        etapa: true,
+                    },
+                },
+            },
+        });
+
+        if (!turma) {
+            return res.status(404).json({
+                sucesso: false,
+                mensagem: 'Turma não encontrada',
+            });
+        }
+
+        const alunos = await prisma.aluno.findMany({
+            where: {
+                turmaId,
+            },
+            orderBy: {
+                nome: 'asc',
+            },
+            select: {
+                id: true,
+                matricula: true,
+                nome: true,
+                ativo: true,
+                notas: {
+                    where: {
+                        disciplinaId,
+                    },
+                    select: {
+                        mediaParcial: true,
+                        mediaFinal: true,
+                        resultado: true,
+                        motivoAprovacao: true,
+                    },
+                },
+            },
+        });
+
+        const dadosAlunos = await Promise.all(
+            alunos.map(async (aluno) => {
+                const nota = aluno.notas[0] ?? null;
+
+                const { totalFaltas, totalAulas, percentualPresenca } = await calculaPresenca({
+                    alunoId: aluno.id,
+                    turmaId,
+                    disciplinaId,
+                });
+
+                // O resultado "Cursando" só aparece para alunos ativos. Para inativos é exibido "-"
+                const resultadoBase = nota?.resultado ?? 'Cursando';
+                const resultadoExibicao = !aluno.ativo && resultadoBase === 'Cursando' ? '-' : resultadoBase;
+
+                return {
+                    alunoId: aluno.id,
+                    matricula: aluno.matricula,
+                    nome: aluno.nome,
+                    ativo: aluno.ativo,
+                    totalFaltas,
+                    totalAulas,
+                    percentualPresenca,
+                    mediaParcial: nota?.mediaParcial ?? null,
+                    mediaFinal: nota?.mediaFinal ?? null,
+                    resultado: resultadoExibicao,
+                    motivoAprovacao: nota?.motivoAprovacao ?? null,
+                };
+            }),
+        );
+
+        return res.status(200).json({
+            sucesso: true,
+            mensagem: 'Alunos listados',
+            dados: {
+                turma: {
+                    nomeCompleto: turma.nomeCompleto,
+                    etapa: turma.anoSerie.etapa,
+                },
+                alunos: dadosAlunos,
+            },
+        });
+    } catch (error) {
+        console.error('Erro ao listar alunos de notas e faltas:', error);
+        return res.status(500).json({
+            sucesso: false,
+            mensagem: 'Erro ao listar alunos de notas e faltas',
+            erro: error.message,
+        });
+    }
+};
+
 // Lista notas
 const listaNotas = async (req, res) => {
     try {
@@ -669,6 +797,7 @@ const editaMotivoAprovacao = async (req, res) => {
 module.exports = {
     listaVinculos,
     listaResumoTurmas,
+    listaAlunosNotasFaltas,
     listaNotas,
     criaNotas,
     editaMotivoAprovacao,

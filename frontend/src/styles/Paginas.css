@@ -220,6 +220,27 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Cor da média */
+td.media-boa {
+    color: #27ae60;
+    font-weight: 600;
+}
+
+td.media-ruim {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+td.media-vazia {
+    color: #bdc3c7;
+}
+
+/* Alerta de presença abaixo do mínimo */
+td.presenca-baixa {
+    color: #f39c12;
+    font-weight: 600;
+}
+
 /* Container dos botões de ação na tabela */
 .table-action {
     display: flex;
@@ -506,7 +527,7 @@ input:checked + .slider:after {
     user-select: none;
 }
 
-/* Ordenacao */
+/* Ordenação */
 .sort-arrow {
     font-size: 12px;
     margin-left: 5px;
@@ -608,6 +629,23 @@ input:checked + .slider:after {
 
     .content-action {
         width: 100%;
+    }
+
+    /* Reorganiza o header de Notas e Faltas no mobile */
+    .titulo-com-seletor {
+        display: contents;
+    }
+
+    .titulo-com-seletor > div:first-child {
+        flex: 1 1 100%;
+    }
+
+    .disciplina-select {
+        flex: 1;
+    }
+
+    .content-header .btn-secondary {
+        flex: 1;
     }
 
     /* Esconde os filtros normais no mobile */
@@ -1024,6 +1062,75 @@ input:checked + .slider:after {
         content: attr(data-label) ': ';
         font-weight: 600;
         color: #7f8c8d;
+    }
+
+    /* Ajustes no ListaAlunosNotasFaltas */
+    .table-alunos-notas tbody tr {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        align-items: center;
+        row-gap: 4px;
+        column-gap: 8px;
+    }
+
+    .table-alunos-notas td[data-label='Matrícula'] {
+        grid-column: 1;
+        grid-row: 1;
+        font-weight: 600;
+        font-size: 12px;
+        color: #7f8c8d;
+    }
+
+    .table-alunos-notas td[data-label='Resultado'] {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+    }
+
+    .table-alunos-notas td[data-label='Status'] {
+        position: static;
+        grid-column: 3;
+        grid-row: 1;
+        justify-self: end;
+    }
+
+    .table-alunos-notas td[data-label='Nome'] {
+        grid-column: 1 / -1;
+        font-size: 22px;
+        padding-top: 8px;
+        display: block;
+    }
+
+    .table-alunos-notas td[data-label='Faltas'],
+    .table-alunos-notas td[data-label='Motivo Aprovação'] {
+        display: none;
+    }
+
+    .table-alunos-notas td[data-label='% Presença'],
+    .table-alunos-notas td[data-label='Média'] {
+        grid-column: 1 / -1;
+        display: block;
+        font-size: 14px;
+    }
+
+    .table-alunos-notas td[data-label='% Presença']::before,
+    .table-alunos-notas td[data-label='Média']::before {
+        content: attr(data-label) ': ';
+        font-weight: 600;
+        color: #7f8c8d;
+    }
+
+    .table-alunos-notas td[data-label='Ações'] {
+        grid-column: 1 / -1;
+        display: flex;
+        padding-top: 15px;
+        margin-top: 15px;
+        border-top: 2px solid #e0e0e0;
+    }
+
+    /* "-" some completamente */
+    .table-alunos-notas td[data-label='Resultado'] .resultado-vazio {
+        display: none;
     }
 
     /* Modal de vincular */

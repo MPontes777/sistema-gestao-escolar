@@ -1,11 +1,26 @@
 const prisma = require('./prisma');
 
-// Calcula presença de um aluno numa disciplina
+// Calcula presença de um aluno em uma disciplina
 async function calculaPresenca({ alunoId, turmaId, disciplinaId }) {
+    const aluno = await prisma.aluno.findUnique({
+        where: { id: alunoId },
+        select: {
+            createdAt: true,
+            inativadoAt: true,
+        },
+    });
+
+    // Período em que o aluno esteve/está matriculado
+    const filtroData = {
+        gte: aluno.createdAt,
+        ...(aluno.inativadoAt ? { lte: aluno.inativadoAt } : {}),
+    };
+
     const planejamentos = await prisma.planejamento.findMany({
         where: {
             turmaId,
             disciplinaId,
+            data: filtroData,
         },
         select: {
             id: true,
