@@ -415,7 +415,7 @@ const criaPlanejamento = async (req, res) => {
                     tabela: 'planejamentos',
                     registroId: novoPlanejamento.id,
                     operacao: 'CREATE',
-                    descricao: `Planejamento "${novoPlanejamento.titulo}" criado por ${req.user.nome} para a turma ${turma.nomeCompleto} — ${disciplina.nome}`,
+                    descricao: `Planejamento "${novoPlanejamento.titulo}" criado por ${req.user.nome} para a turma ${turma.nomeCompleto} - ${disciplina.nome}`,
                     valorAnterior: null,
                     valorNovo: {
                         titulo: novoPlanejamento.titulo,
@@ -665,7 +665,7 @@ const excluiPlanejamento = async (req, res) => {
                     tabela: 'planejamentos',
                     registroId: planejamentoExiste.id,
                     operacao: 'DELETE',
-                    descricao: `Planejamento "${planejamentoExiste.titulo}" excluído por ${req.user.nome} — turma ${planejamentoExiste.turma.nomeCompleto}`,
+                    descricao: `Planejamento "${planejamentoExiste.titulo}" excluído por ${req.user.nome} - turma ${planejamentoExiste.turma.nomeCompleto}`,
                     valorAnterior: {
                         titulo: planejamentoExiste.titulo,
                         turmaId: planejamentoExiste.turmaId,

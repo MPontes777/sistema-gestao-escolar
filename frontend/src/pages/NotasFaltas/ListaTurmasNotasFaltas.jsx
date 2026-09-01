@@ -71,7 +71,7 @@ const ListaTurmasNotasFaltas = () => {
 
     // Texto de exibição da média geral
     const textoMedia = (mediaGeral) => {
-        return mediaGeral === null ? '—' : mediaGeral.toFixed(1);
+        return mediaGeral === null ? '-' : mediaGeral.toFixed(1);
     };
 
     // Navega para a tela de lançamento (lista de alunos da turma)

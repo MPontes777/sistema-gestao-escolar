@@ -177,7 +177,7 @@ const buscaAlunoId = async (req, res) => {
                         bimestre3: true,
                         bimestre4: true,
                         mediaFinal: true,
-                        criterio: true,
+                        resultado: true,
                         disciplina: {
                             select: {
                                 id: true,

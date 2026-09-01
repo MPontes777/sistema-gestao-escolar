@@ -255,7 +255,7 @@ const FormularioTurma = () => {
                                 <option value="">Selecione o ano/série...</option>
                                 {anosSeries.map((anoSerie) => (
                                     <option key={anoSerie.id} value={anoSerie.id}>
-                                        {anoSerie.nome} — {anoSerie.etapa}
+                                        {anoSerie.nome} ({anoSerie.etapa})
                                     </option>
                                 ))}
                             </select>

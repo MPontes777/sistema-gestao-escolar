@@ -311,7 +311,7 @@ const criaFaltas = async (req, res) => {
                         operacao: faltaExistente ? 'UPDATE' : 'CREATE',
                         descricao: faltaExistente
                             ? `Falta de "${aluno.nome}" no planejamento "${planejamento.titulo}" atualizada por ${userNome}: ${faltaExistente.quantidadeFaltas} → ${quantidadeInt} aula(s)`
-                            : `Falta de "${aluno.nome}" no planejamento "${planejamento.titulo}" lançada por ${userNome} — ${quantidadeInt}/${planejamento.numeroAulas} aula(s)`,
+                            : `Falta de "${aluno.nome}" no planejamento "${planejamento.titulo}" lançada por ${userNome} - ${quantidadeInt}/${planejamento.numeroAulas} aula(s)`,
                         valorAnterior: faltaExistente ? { quantidadeFaltas: faltaExistente.quantidadeFaltas } : null,
                         valorNovo: { quantidadeFaltas: quantidadeInt },
                     },
