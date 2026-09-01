@@ -226,14 +226,11 @@ const ListaAlunosNotasFaltas = () => {
     }, [alunos, filtros, ordenacao]);
 
     // Navegações da coluna de Ações
-    const navegaLancarNotas = (alunoId) => {
-        navigate(`/notas-faltas/lancar-notas/${alunoId}?turmaId=${turmaId}&disciplinaId=${disciplinaId}`);
+    const navegaNotas = (alunoId) => {
+        navigate(`/notas-faltas/notas/${alunoId}?turmaId=${turmaId}&disciplinaId=${disciplinaId}`);
     };
-    const navegaLancarFaltas = (alunoId) => {
-        navigate(`/notas-faltas/lancar-faltas/${alunoId}?turmaId=${turmaId}&disciplinaId=${disciplinaId}`);
-    };
-    const navegaVerNotasFaltas = (alunoId) => {
-        navigate(`/notas-faltas/ver/${alunoId}?turmaId=${turmaId}&disciplinaId=${disciplinaId}`);
+    const navegaFaltas = (alunoId) => {
+        navigate(`/notas-faltas/faltas/${alunoId}?turmaId=${turmaId}&disciplinaId=${disciplinaId}`);
     };
 
     const loading = loadingVinculos || loadingAlunos;
@@ -424,56 +421,35 @@ const ListaAlunosNotasFaltas = () => {
                                                 {/* Botões Desktop */}
                                                 <div className="table-action">
                                                     <button
-                                                        onClick={() => navegaVerNotasFaltas(aluno.alunoId)}
+                                                        onClick={() => navegaNotas(aluno.alunoId)}
                                                         className="btn-action"
-                                                        title="Ver Notas e Faltas"
+                                                        title="Notas"
                                                     >
-                                                        👁️
+                                                        📝
                                                     </button>
-                                                    {aluno.ativo && (
-                                                        <button
-                                                            onClick={() => navegaLancarNotas(aluno.alunoId)}
-                                                            className="btn-action"
-                                                            title="Lançar Notas"
-                                                        >
-                                                            📝
-                                                        </button>
-                                                    )}
-                                                    {aluno.ativo && !admin && (
-                                                        <button
-                                                            onClick={() => navegaLancarFaltas(aluno.alunoId)}
-                                                            className="btn-action"
-                                                            title="Lançar Faltas"
-                                                        >
-                                                            📋
-                                                        </button>
-                                                    )}
+                                                    <button
+                                                        onClick={() => navegaFaltas(aluno.alunoId)}
+                                                        className="btn-action"
+                                                        title="Faltas"
+                                                    >
+                                                        📋
+                                                    </button>
                                                 </div>
 
                                                 {/* Botões Mobile */}
                                                 <div className="table-action table-action-mobile">
                                                     <button
-                                                        onClick={() => navegaVerNotasFaltas(aluno.alunoId)}
+                                                        onClick={() => navegaNotas(aluno.alunoId)}
                                                         className="btn-mobile btn-mobile-edit"
                                                     >
-                                                        Ver Notas e Faltas
+                                                        Notas
                                                     </button>
-                                                    {aluno.ativo && (
-                                                        <button
-                                                            onClick={() => navegaLancarNotas(aluno.alunoId)}
-                                                            className="btn-mobile btn-mobile-edit"
-                                                        >
-                                                            Lançar Notas
-                                                        </button>
-                                                    )}
-                                                    {aluno.ativo && !admin && (
-                                                        <button
-                                                            onClick={() => navegaLancarFaltas(aluno.alunoId)}
-                                                            className="btn-mobile btn-mobile-faltas"
-                                                        >
-                                                            Lançar Faltas
-                                                        </button>
-                                                    )}
+                                                    <button
+                                                        onClick={() => navegaFaltas(aluno.alunoId)}
+                                                        className="btn-mobile btn-mobile-faltas"
+                                                    >
+                                                        Faltas
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
