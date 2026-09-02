@@ -1,6 +1,6 @@
 const prisma = require('../utils/prisma');
 const { buscaVinculos } = require('../utils/vinculos');
-const { calculaPresenca } = require('../utils/aproveitamento');
+const { calculaPresenca, calculaResultadoAutomatico } = require('../utils/aproveitamento');
 
 // Lista vínculos professor-turma-disciplina (mesmo padrão de Planejamentos)
 const listaVinculos = async (req, res) => {
@@ -128,6 +128,66 @@ const listaFaltas = async (req, res) => {
     }
 };
 
+// Recalcula resultado e média de uma Nota já existente depois de uma mudança em faltas
+async function recalculaResultadoNota({ alunoId, disciplinaId, userId, userNome }) {
+    const notaExistente = await prisma.nota.findUnique({
+        where: {
+            alunoId_disciplinaId: { alunoId, disciplinaId },
+        },
+        include: {
+            aluno: { select: { nome: true, turmaId: true } },
+            disciplina: { select: { nome: true } },
+        },
+    });
+
+    // Sem nota lançada para esse aluno na disciplina
+    if (!notaExistente) return;
+
+    const valorBimestres = {
+        bimestre1: notaExistente.bimestre1,
+        bimestre2: notaExistente.bimestre2,
+        bimestre3: notaExistente.bimestre3,
+        bimestre4: notaExistente.bimestre4,
+    };
+
+    const {
+        mediaParcial,
+        mediaFinal,
+        resultado: resultadoCalculado,
+    } = await calculaResultadoAutomatico({
+        alunoId,
+        turmaId: notaExistente.aluno.turmaId,
+        disciplinaId,
+        valorBimestres,
+    });
+
+    // Motivo Aprovação
+    const resultadoFinal = notaExistente.motivoAprovacao ? 'Aprovado' : resultadoCalculado;
+
+    // Busca alterações
+    if (resultadoFinal === notaExistente.resultado) return;
+
+    await prisma.$transaction(async (tx) => {
+        await tx.nota.update({
+            where: { id: notaExistente.id },
+            data: { mediaParcial, mediaFinal, resultado: resultadoFinal },
+        });
+
+        await tx.auditLog.create({
+            data: {
+                usuarioId: userId,
+                usuarioNome: userNome,
+                tabela: 'notas',
+                registroId: notaExistente.id,
+                operacao: 'UPDATE',
+                descricao: `Resultado de "${notaExistente.aluno.nome}" em "${notaExistente.disciplina.nome}" recalculado após alteração de faltas por ${userNome}: ${notaExistente.resultado} → ${resultadoFinal}`,
+                valorAnterior: { resultado: notaExistente.resultado, mediaFinal: notaExistente.mediaFinal },
+                valorNovo: { resultado: resultadoFinal, mediaFinal },
+            },
+        });
+    });
+}
+
 // Lança faltas em lote
 const criaFaltas = async (req, res) => {
     try {
@@ -184,6 +244,7 @@ const criaFaltas = async (req, res) => {
                 id: true,
                 professorId: true,
                 turmaId: true,
+                disciplinaId: true,
                 numeroAulas: true,
                 titulo: true,
             },
@@ -322,6 +383,24 @@ const criaFaltas = async (req, res) => {
 
             return salvas;
         });
+
+        // Recalcula resultado
+        const paresAfetados = new Map();
+        for (const registro of registros) {
+            const planejamento = planejamentosMap.get(registro.planejamentoId);
+            const chave = `${registro.alunoId}|${planejamento.disciplinaId}`;
+            if (!paresAfetados.has(chave)) {
+                paresAfetados.set(chave, { alunoId: registro.alunoId, disciplinaId: planejamento.disciplinaId });
+            }
+        }
+
+        try {
+            for (const par of paresAfetados.values()) {
+                await recalculaResultadoNota({ ...par, userId, userNome });
+            }
+        } catch (error) {
+            console.error('Erro ao recalcular resultado após lançamento de faltas:', error);
+        }
 
         return res.status(201).json({
             sucesso: true,

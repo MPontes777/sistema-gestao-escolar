@@ -615,6 +615,116 @@ input:checked + .slider:after {
     margin-top: 30px;
 }
 
+/* Flag de justificativa na tabela */
+.flag-justificativa {
+    border: none;
+    background: none;
+    font-size: 18px;
+    padding: 4px;
+    border-radius: 6px;
+    position: relative;
+    cursor: default;
+}
+
+.flag-justificativa.clicavel {
+    cursor: pointer;
+}
+
+.flag-justificativa.clicavel:hover {
+    background-color: #f4f6f7;
+}
+
+.flag-justificativa .tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c3e50;
+    color: #ffffff;
+    font-size: 12px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    width: 210px;
+    text-align: left;
+    font-weight: 400;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.flag-justificativa:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Campo pequeno de faltas na tabela */
+.input-mini {
+    width: 65px;
+    padding: 8px 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.input-mini:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.input-mini.input-error {
+    border-color: #e74c3c;
+}
+
+/* Lista de planejamentos do dia dentro do modal Justificativa */
+.lista-planejamentos-dia {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.selecionar-todos {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 4px;
+}
+
+.item-planejamento-dia {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+}
+
+.item-planejamento-dia input {
+    margin-top: 3px;
+}
+
+.ja-justificada {
+    color: #f39c12;
+    font-size: 11px;
+    display: block;
+}
+
+.modal-vazio {
+    font-size: 13px;
+    color: #7f8c8d;
+    padding: 10px 0;
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
     .content-header {

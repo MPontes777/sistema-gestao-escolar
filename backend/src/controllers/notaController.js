@@ -1,40 +1,9 @@
 const prisma = require('../utils/prisma');
 const { buscaVinculos } = require('../utils/vinculos');
-const { calculaPresenca } = require('../utils/aproveitamento');
+const { calculaPresenca, calculaResultadoAutomatico } = require('../utils/aproveitamento');
 
-const notaAprovacao = 6.0;
-const presencaMinima = 75;
 const camposBimestre = ['bimestre1', 'bimestre2', 'bimestre3', 'bimestre4'];
 const motivosValidos = ['Recuperação', 'Conselho de Classe', 'Outro'];
-
-// Calcula média parcial, média final e resultado
-async function calculaResultadoAutomatico({ alunoId, turmaId, disciplinaId, valorBimestres }) {
-    const valoresPreenchidos = camposBimestre
-        .map((campo) => valorBimestres[campo])
-        .filter((v) => v !== null && v !== undefined);
-
-    const todosBimestresPreenchidos = valoresPreenchidos.length === camposBimestre.length;
-
-    if (!todosBimestresPreenchidos) {
-        const mediaParcial =
-            valoresPreenchidos.length > 0
-                ? Number((valoresPreenchidos.reduce((soma, v) => soma + v, 0) / valoresPreenchidos.length).toFixed(1))
-                : null;
-
-        return { mediaParcial, mediaFinal: null, resultado: 'Cursando' };
-    }
-
-    const mediaFinal = Number((valoresPreenchidos.reduce((soma, v) => soma + v, 0) / 4).toFixed(1));
-
-    const { percentualPresenca } = await calculaPresenca({ alunoId, turmaId, disciplinaId });
-
-    // Não reprova por falta se não tiver registro de presença/falta
-    const presencaOk = percentualPresenca === null || percentualPresenca >= presencaMinima;
-
-    const resultado = mediaFinal >= notaAprovacao && presencaOk ? 'Aprovado' : 'Reprovado';
-
-    return { mediaParcial: null, mediaFinal, resultado };
-}
 
 // Lista vínculos professor-turma-disciplina
 const listaVinculos = async (req, res) => {
@@ -232,6 +201,8 @@ const listaAlunosNotasFaltas = async (req, res) => {
                 matricula: true,
                 nome: true,
                 ativo: true,
+                createdAt: true,
+                inativadoAt: true,
                 notas: {
                     where: {
                         disciplinaId,
@@ -265,6 +236,8 @@ const listaAlunosNotasFaltas = async (req, res) => {
                     matricula: aluno.matricula,
                     nome: aluno.nome,
                     ativo: aluno.ativo,
+                    createdAt: aluno.createdAt,
+                    inativadoAt: aluno.inativadoAt,
                     totalFaltas,
                     totalAulas,
                     percentualPresenca,
