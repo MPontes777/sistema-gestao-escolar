@@ -537,7 +537,7 @@ const ListaPlanejamentos = () => {
                                                             <>
                                                                 <button
                                                                     onClick={() =>
-                                                                        navigate(`/faltas/planejamento/${p.id}`)
+                                                                        navigate(`/planejamentos/faltas/${p.id}`)
                                                                     }
                                                                     className="btn-action"
                                                                     title="Lançar faltas"
@@ -575,7 +575,7 @@ const ListaPlanejamentos = () => {
                                                             <>
                                                                 <button
                                                                     onClick={() =>
-                                                                        navigate(`/faltas/planejamento/${p.id}`)
+                                                                        navigate(`/planejamentos/faltas/${p.id}`)
                                                                     }
                                                                     className="btn-mobile btn-mobile-faltas"
                                                                 >

@@ -22,11 +22,11 @@ const Faltas = () => {
     const [erro, setErro] = useState(null);
     const [mensagem, setMensagem] = useState({ tipo: '', texto: '' });
 
-    // Filtros (client-side) e paginação
+    // Filtros e paginação
     const [filtros, setFiltros] = useState({ dataInicio: '', dataFim: '', bimestre: 'todos', justificada: 'todos' });
     const [paginaAtual, setPaginaAtual] = useState(1);
 
-    // Edição em lote (professor)
+    // Edição em lote
     const [modoEdicao, setModoEdicao] = useState(false);
     const [camposForm, setCamposForm] = useState({});
     const [valoresOriginais, setValoresOriginais] = useState(null);
@@ -36,12 +36,12 @@ const Faltas = () => {
     // Modal de sair sem salvar
     const [modalSair, setModalSair] = useState(false);
 
-    // Modal de Justificar / Editar Justificativa (admin)
+    // Modal de Justificativa
     const [modalJustificar, setModalJustificar] = useState({ aberto: false, tipo: 'criar', data: '', descricao: '' });
     const [itensModal, setItensModal] = useState([]);
     const [salvandoJustificativa, setSalvandoJustificativa] = useState(false);
 
-    // Carrega dados do aluno, planejamentos da turma+disciplina e faltas já lançadas para esse aluno
+    // Carrega dados do aluno, planejamentos da turma na disciplina e faltas
     const carregaDados = async () => {
         try {
             setLoading(true);
@@ -65,7 +65,7 @@ const Faltas = () => {
             setTurma(respAlunos.data.dados.turma);
             setAluno(alunoEncontrado);
 
-            // Só planejamentos dentro da janela de matrícula do aluno (mesma regra do calculaPresenca)
+            // Planejamentos enquanto aluno estiver matriculado
             const inicioMatricula = new Date(alunoEncontrado.createdAt);
             const fimMatricula = alunoEncontrado.inativadoAt ? new Date(alunoEncontrado.inativadoAt) : null;
 
@@ -94,7 +94,7 @@ const Faltas = () => {
 
             setLinhas(linhasMontadas);
 
-            // Todo campo já nasce com um número válido (0 quando nunca foi lançado) — nunca em branco
+            // Faltas são representadas por um zero quando nunca foram lançadas
             const dadosForm = {};
             linhasMontadas.forEach((l) => {
                 dadosForm[l.planejamentoId] = l.faltas === null ? '0' : l.faltas.toString();
@@ -108,7 +108,7 @@ const Faltas = () => {
         }
     };
 
-    // Carrega vínculos (mesmo endpoint reaproveitado de Notas.jsx)
+    // Carrega vínculos
     const carregaVinculos = async () => {
         try {
             const response = await api.get('/notas/vinculos');
@@ -131,25 +131,25 @@ const Faltas = () => {
         carregaDados();
     }, [disciplinaId]);
 
-    // Disciplinas vinculadas a turma (mesmo padrão de Notas.jsx)
+    // Disciplinas vinculadas a turma
     const disciplinasDaTurma = useMemo(() => {
         const idsValidos = new Set(vinculos.vinculos.filter((v) => v.turmaId === turmaId).map((v) => v.disciplinaId));
         return vinculos.disciplinas.filter((d) => idsValidos.has(d.id));
     }, [vinculos, turmaId]);
 
-    // Troca a disciplina selecionada (apenas fora do modo de edição)
+    // Troca a disciplina selecionada no modo de edição
     const mudaDisciplina = (novaDisciplinaId) => {
         setMensagem({ tipo: '', texto: '' });
         setSearchParams({ turmaId, disciplinaId: novaDisciplinaId });
     };
 
-    // Verifica se algum valor de falta foi alterado
+    // Verifica se alguma falta foi alterada
     const houveMudanca = () => {
         if (!valoresOriginais) return false;
         return linhas.some((l) => camposForm[l.planejamentoId] !== valoresOriginais[l.planejamentoId]);
     };
 
-    // Aviso de edição não salva (mesmo padrão de Notas.jsx, limitação conhecida #7)
+    // Aviso de edição não salva
     useEffect(() => {
         const avisaSaida = (e) => {
             if (modoEdicao && houveMudanca()) {
@@ -161,21 +161,21 @@ const Faltas = () => {
         return () => window.removeEventListener('beforeunload', avisaSaida);
     }, [modoEdicao, camposForm, valoresOriginais]);
 
-    // Entra no modo de edição em lote
+    // Modo de edição
     const iniciaEdicao = () => {
         setValoresOriginais(camposForm);
         setModoEdicao(true);
         setMensagem({ tipo: '', texto: '' });
     };
 
-    // Descarta as alterações e volta pro modo visualização
+    // Descarta as alterações e volta para o modo visualização
     const cancelaEdicao = () => {
         setCamposForm(valoresOriginais);
         setErrors({});
         setModoEdicao(false);
     };
 
-    // Atualiza o campo de um planejamento específico
+    // Atualiza o campo de um planejamento
     const mudaFormulario = (planejamentoId, valor) => {
         setCamposForm((prev) => ({ ...prev, [planejamentoId]: valor }));
         if (errors[planejamentoId]) {
@@ -183,7 +183,7 @@ const Faltas = () => {
         }
     };
 
-    // Valida cada linha — sempre um número entre 0 e o número de aulas daquele planejamento
+    // Valida formulário
     const validaFormulario = () => {
         const errosForm = {};
         linhas.forEach((l) => {
@@ -197,7 +197,7 @@ const Faltas = () => {
         return Object.keys(errosForm).length === 0;
     };
 
-    // Salva só as linhas que realmente mudaram (evita poluir o audit log com "atualizada: 2 → 2")
+    // Salva apenas as linhas que mudaram
     const salvaFaltas = async () => {
         if (!validaFormulario()) {
             setMensagem({ tipo: 'error', texto: 'Corrija os erros no formulário.' });
@@ -224,9 +224,7 @@ const Faltas = () => {
 
             await api.post('/faltas', { registros });
 
-            // Recarrega tudo — linhas, faltas totais, % presença e resultado (recalculado
-            // no backend) ficam corretos de novo. Substitui o patch manual que só
-            // atualizava `linhas` e deixava o card de Situação Atual desatualizado.
+            // Recarrega dados
             await carregaDados();
 
             setModoEdicao(false);
@@ -242,7 +240,7 @@ const Faltas = () => {
         }
     };
 
-    // Navega para lista de alunos da turma
+    // Volta para a lista de alunos da turma
     const navegaParaLista = () => {
         navigate(`/alunos-notas-faltas/${turmaId}?disciplinaId=${disciplinaId}`);
     };
@@ -260,14 +258,12 @@ const Faltas = () => {
         navegaParaLista();
     };
 
-    // Só professor lança falta (decisão #19), só aluno ativo (mesmo espírito da #47)
+    // Apenas professor lança falta de aluno ativo
     const podeEditar = !admin && aluno?.ativo;
 
-    // Formata data no padrão pt-BR (mesma função já usada em DetalhesTurma.jsx)
+    // Formata data
     const formataData = (data) => new Date(data).toLocaleDateString('pt-BR');
 
-    // Mesmo tratamento visual de Média/Resultado usado em Notas.jsx (com `?.` porque
-    // `aluno` ainda é null no primeiro render, antes do carregaDados() terminar)
     const media = aluno?.mediaFinal ?? aluno?.mediaParcial ?? null;
 
     const classeMedia = (valor) => {
@@ -292,7 +288,7 @@ const Faltas = () => {
         }
     };
 
-    // Filtros e paginação — tudo client-side (Decisão 1, opção B)
+    // Filtros e paginação
     const linhasFiltradas = useMemo(() => {
         return linhas.filter((l) => {
             const dataSlice = typeof l.data === 'string' ? l.data.slice(0, 10) : '';
@@ -332,14 +328,14 @@ const Faltas = () => {
         }
     };
 
-    // Datas do período do filtro (e do modal) ficam clampadas na janela de matrícula do aluno
+    // Datas do período do filtro ficam limitadas ao período que o aluno estiver matriculado
     const dataMinFiltro = aluno ? new Date(aluno.createdAt).toISOString().slice(0, 10) : undefined;
     const dataMaxFiltro = aluno?.inativadoAt ? new Date(aluno.inativadoAt).toISOString().slice(0, 10) : undefined;
 
-    // ===== Modal Justificar / Editar Justificativa =====
+    // Modal Justificativa
     const dataISO = (d) => (typeof d === 'string' ? d.slice(0, 10) : new Date(d).toISOString().slice(0, 10));
 
-    // Monta a lista de planejamentos daquele dia que têm falta lançada (só esses podem ser justificados)
+    // Lista de planejamentos daquele dia com falta lançada
     const montaItensModal = (dataIsoSelecionada) => {
         return linhas
             .filter((l) => l.faltas > 0 && dataISO(l.data) === dataIsoSelecionada)
@@ -354,13 +350,11 @@ const Faltas = () => {
             }));
     };
 
-    // Entrada 1: botão "Justificar" do cabeçalho — data em branco, admin escolhe
     const abreModalNovo = () => {
         setModalJustificar({ aberto: true, tipo: 'criar', data: '', descricao: '' });
         setItensModal([]);
     };
 
-    // Entrada 2: clique na flag de uma linha — data pré-preenchida, descrição vem da própria falta clicada
     const abreModalEdicao = (planejamentoId) => {
         const linhaClicada = linhas.find((l) => l.planejamentoId === planejamentoId);
         if (!linhaClicada) return;
@@ -399,12 +393,12 @@ const Faltas = () => {
         setItensModal((prev) => prev.map((item) => ({ ...item, marcado: valor })));
     };
 
-    // Só habilita Confirmar/Salvar quando há uma mudança real a aplicar
+    // Salva apenas quando tiver uma mudança
     const modalTemMudanca = itensModal.some((item) => item.marcado || (!item.marcado && item.justificativaOriginal));
     const modalPrecisaDescricao = itensModal.some((item) => item.marcado) && !modalJustificar.descricao.trim();
     const podeConfirmarModal = !!modalJustificar.data && modalTemMudanca && !modalPrecisaDescricao;
 
-    // Salva sem atomicidade: uma chamada PUT /faltas/:id por item alterado (decisão confirmada)
+    // Salva item a item alterado
     const confirmaJustificativa = async () => {
         setSalvandoJustificativa(true);
         setMensagem({ tipo: '', texto: '' });
@@ -430,8 +424,7 @@ const Faltas = () => {
             }
         }
 
-        // Recarrega do zero pra refletir o estado real do banco — mais simples e seguro
-        // do que reconciliar manualmente no client, especialmente sem atomicidade
+        // Recarrega dados
         await carregaDados();
 
         setSalvandoJustificativa(false);
@@ -497,7 +490,7 @@ const Faltas = () => {
             {/* Mensagem de Feedback */}
             {mensagem.texto && <div className={`alert alert-${mensagem.tipo}`}>{mensagem.texto}</div>}
 
-            {/* Card de Situação Atual (idêntico a Notas.jsx) */}
+            {/* Card de Situação Atual */}
             <div className="card" style={{ marginBottom: '30px' }}>
                 <div className="card-header">
                     <h2 className="card-section-title">📊 Situação Atual</h2>
@@ -562,7 +555,7 @@ const Faltas = () => {
                 </div>
             </div>
 
-            {/* Filtros — bloco independente, mesmo padrão de ListaPlanejamentos.jsx */}
+            {/* Filtros */}
             <div className="content-filters">
                 <div className="content-filters-group">
                     <div className="input-group">
@@ -653,7 +646,7 @@ const Faltas = () => {
                     </div>
                 ) : (
                     <div className="card-body" style={{ padding: 0 }}>
-                        <table className="table">
+                        <table className="table table-faltas-planejamento">
                             <thead>
                                 <tr>
                                     <th>Data</th>
@@ -667,11 +660,13 @@ const Faltas = () => {
                             <tbody>
                                 {linhasPagina.map((l) => (
                                     <tr key={l.planejamentoId}>
-                                        <td>{formataData(l.data)}</td>
-                                        <td>{l.bimestre}º</td>
-                                        <td style={{ fontWeight: 600 }}>{l.titulo}</td>
-                                        <td>{l.numeroAulas}</td>
-                                        <td>
+                                        <td data-label="Data">{formataData(l.data)}</td>
+                                        <td data-label="Bimestre">{l.bimestre}º Bimestre</td>
+                                        <td data-label="Título" style={{ fontWeight: 600 }}>
+                                            {l.titulo}
+                                        </td>
+                                        <td data-label="Aulas">{l.numeroAulas}</td>
+                                        <td data-label="Faltas">
                                             {modoEdicao ? (
                                                 <>
                                                     <input
@@ -697,7 +692,7 @@ const Faltas = () => {
                                                 </span>
                                             )}
                                         </td>
-                                        <td>
+                                        <td data-label="Justificativa">
                                             {l.faltas > 0 ? (
                                                 <button
                                                     type="button"
@@ -722,7 +717,7 @@ const Faltas = () => {
                             </tbody>
                         </table>
 
-                        {/* Paginação — mesmo componente de DetalhesTurma.jsx */}
+                        {/* Paginação */}
                         <div className="page-container">
                             <div className="page-info">
                                 <p>
@@ -833,7 +828,7 @@ const Faltas = () => {
                 </div>
             )}
 
-            {/* Modal Justificar / Editar Justificativa (admin) */}
+            {/* Modal de Justificativa */}
             {modalJustificar.aberto && (
                 <div className="modal-overlay" onClick={fechaModalJustificar}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -878,10 +873,10 @@ const Faltas = () => {
                                                 disabled={salvandoJustificativa}
                                             />
                                             <span>
-                                                <b>{item.titulo}</b> — {item.bimestre}º bimestre, {item.faltas} falta(s)
+                                                <b>{item.titulo}</b> - {item.bimestre}º bimestre, {item.faltas} falta(s)
                                                 {item.justificativaOriginal && (
                                                     <span className="ja-justificada">
-                                                        ✓ já justificada — desmarque para remover
+                                                        ✓ já justificada - desmarque para remover
                                                     </span>
                                                 )}
                                             </span>

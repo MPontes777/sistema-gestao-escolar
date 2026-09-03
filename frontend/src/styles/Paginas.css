@@ -1174,6 +1174,47 @@ input:checked + .slider:after {
         color: #7f8c8d;
     }
 
+    /* Ajustes no card de Faltas por Planejamento */
+    .table-faltas-planejamento td[data-label='Data'] {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: #7f8c8d;
+    }
+
+    .table-faltas-planejamento td[data-label='Bimestre'] {
+        display: block;
+        font-size: 14px;
+        color: #7f8c8d;
+        padding-top: 2px;
+    }
+
+    .table-faltas-planejamento td[data-label='Título'] {
+        font-size: 20px;
+        font-weight: 600;
+        padding-top: 10px;
+        display: block;
+    }
+
+    .table-faltas-planejamento td[data-label='Aulas'],
+    .table-faltas-planejamento td[data-label='Faltas'] {
+        display: block;
+        font-size: 14px;
+        padding-top: 8px;
+    }
+
+    .table-faltas-planejamento td[data-label='Aulas']::before,
+    .table-faltas-planejamento td[data-label='Faltas']::before {
+        content: attr(data-label) ': ';
+        font-weight: 600;
+        color: #7f8c8d;
+    }
+
+    .table-faltas-planejamento td[data-label='Justificativa'] {
+        display: block;
+        padding-top: 10px;
+    }
+
     /* Ajustes no ListaAlunosNotasFaltas */
     .table-alunos-notas tbody tr {
         display: grid;
