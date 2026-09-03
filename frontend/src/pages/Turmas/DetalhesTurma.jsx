@@ -49,6 +49,16 @@ const DetalhesTurma = () => {
         return new Date(data).toLocaleDateString('pt-BR');
     };
 
+    // Formata data de nascimento
+    const formataDataNascimento = (data) => {
+        if (!data) return '-';
+        const d = new Date(data);
+        const dia = String(d.getUTCDate()).padStart(2, '0');
+        const mes = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const ano = d.getUTCFullYear();
+        return `${dia}/${mes}/${ano}`;
+    };
+
     // Mostra mensagem temporária de feedback
     const mostraMensagem = (tipo, texto) => {
         setMensagem({ tipo, texto });
@@ -398,7 +408,7 @@ const DetalhesTurma = () => {
                                                             {aluno.nome}
                                                         </td>
                                                         <td data-label="Data de Nasc.">
-                                                            {formataData(aluno.dataNascimento)}
+                                                            {formataDataNascimento(aluno.dataNascimento)}
                                                         </td>
                                                         <td data-label="E-mail">{aluno.email || '-'}</td>
                                                         <td data-label="Ações">

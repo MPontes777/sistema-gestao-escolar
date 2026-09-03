@@ -127,10 +127,10 @@ const ListaAlunos = () => {
     // Formata data de YYYY-MM-DD para DD/MM/YYYY
     const formataData = (data) => {
         if (!data) return '-';
-        const dataFormat = new Date(data);
-        const dia = String(dataFormat.getDate()).padStart(2, '0');
-        const mes = String(dataFormat.getMonth() + 1).padStart(2, '0');
-        const ano = dataFormat.getFullYear();
+        const d = new Date(data);
+        const dia = String(d.getUTCDate()).padStart(2, '0');
+        const mes = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const ano = d.getUTCFullYear();
         return `${dia}/${mes}/${ano}`;
     };
 

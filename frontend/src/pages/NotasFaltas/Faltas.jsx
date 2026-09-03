@@ -262,7 +262,14 @@ const Faltas = () => {
     const podeEditar = !admin && aluno?.ativo;
 
     // Formata data
-    const formataData = (data) => new Date(data).toLocaleDateString('pt-BR');
+    const formataData = (data) => {
+        if (!data) return '-';
+        const d = new Date(data);
+        const dia = String(d.getUTCDate()).padStart(2, '0');
+        const mes = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const ano = d.getUTCFullYear();
+        return `${dia}/${mes}/${ano}`;
+    };
 
     const media = aluno?.mediaFinal ?? aluno?.mediaParcial ?? null;
 
