@@ -1215,6 +1215,34 @@ input:checked + .slider:after {
         padding-top: 10px;
     }
 
+    /* Dashboard (tabela de alunos por turma) */
+    .table-dashboard-turmas td[data-label='Turma'] {
+        font-size: 18px;
+        font-weight: 600;
+        display: block;
+    }
+
+    .table-dashboard-turmas td[data-label='Etapa'],
+    .table-dashboard-turmas td[data-label='Período'] {
+        display: block;
+        font-size: 13px;
+        color: #7f8c8d;
+    }
+
+    .table-dashboard-turmas td[data-label='Ativos'],
+    .table-dashboard-turmas td[data-label='Inativos'] {
+        display: block;
+        font-size: 14px;
+        padding-top: 6px;
+    }
+
+    .table-dashboard-turmas td[data-label='Ativos']::before,
+    .table-dashboard-turmas td[data-label='Inativos']::before {
+        content: attr(data-label) ': ';
+        font-weight: 600;
+        color: #7f8c8d;
+    }
+
     /* Ajustes no ListaAlunosNotasFaltas */
     .table-alunos-notas tbody tr {
         display: grid;
