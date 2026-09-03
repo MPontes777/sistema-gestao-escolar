@@ -69,6 +69,7 @@ async function main() {
     const geografia = await prisma.disciplina.create({ data: { nome: 'Geografia', ativo: true } });
     const ciencias = await prisma.disciplina.create({ data: { nome: 'Ciências', ativo: true } });
     const ingles = await prisma.disciplina.create({ data: { nome: 'Inglês', ativo: true } });
+    const fisica = await prisma.disciplina.create({ data: { nome: 'Física', ativo: true } });
 
     console.log('Tabela de disciplinas populada com sucesso\n');
 
@@ -179,6 +180,18 @@ async function main() {
         },
     });
     console.log('9º Ano A (2024) criada');
+
+    const turma1A2026 = await prisma.turma.create({
+        data: {
+            anoSerieId: serie1.id,
+            letra: 'A',
+            periodo: 'MATUTINO',
+            anoLetivo: 2026,
+            nomeCompleto: '1ª Série A (2026)',
+            ativo: true,
+        },
+    });
+    console.log('1ª Série A (2026) criada');
     console.log('Tabela de turmas populada com sucesso\n');
 
     // Vincula professores às turmas e disciplinas
@@ -218,6 +231,27 @@ async function main() {
         data: { professorId: profInativo.id, turmaId: turma9A2024.id, disciplinaId: portugues.id },
     });
     console.log('Pedro Coelho (inativo) vinculado a 9º Ano A (2024) - Português');
+
+    // Todos os professores ativos vinculados à nova turma 1ª Série A (2026)
+    await prisma.professorTurma.create({
+        data: { professorId: profMatematica.id, turmaId: turma1A2026.id, disciplinaId: matematica.id },
+    });
+    console.log('Mateus Pontes vinculado a 1ª Série A (2026) - Matemática');
+
+    await prisma.professorTurma.create({
+        data: { professorId: profMatematica.id, turmaId: turma1A2026.id, disciplinaId: fisica.id },
+    });
+    console.log('Mateus Pontes vinculado a 1ª Série A (2026) - Física');
+
+    await prisma.professorTurma.create({
+        data: { professorId: profPortugues.id, turmaId: turma1A2026.id, disciplinaId: portugues.id },
+    });
+    console.log('Ellen Melo vinculada a 1ª Série A (2026) - Português');
+
+    await prisma.professorTurma.create({
+        data: { professorId: profCiencias.id, turmaId: turma1A2026.id, disciplinaId: ciencias.id },
+    });
+    console.log('Fagner Januario vinculado a 1ª Série A (2026) - Ciências');
     console.log('Vínculos criados com sucesso\n');
 
     // Popula tabela de alunos
@@ -236,6 +270,7 @@ async function main() {
             endereco: 'Rua Cumbe, 80 - São Paulo/SP',
             turmaId: turma8A2025.id,
             ativo: true,
+            createdAt: new Date('2025-01-05'),
         },
     });
     const aluno2 = await prisma.aluno.create({
@@ -250,6 +285,7 @@ async function main() {
             endereco: 'Av. Paulista, 1000 - São Paulo/SP',
             turmaId: turma8A2025.id,
             ativo: true,
+            createdAt: new Date('2025-01-05'),
         },
     });
     const aluno3 = await prisma.aluno.create({
@@ -264,6 +300,7 @@ async function main() {
             endereco: 'Rua Augusta, 250 - São Paulo/SP',
             turmaId: turma8A2025.id,
             ativo: true,
+            createdAt: new Date('2025-01-05'),
         },
     });
 
@@ -280,6 +317,7 @@ async function main() {
             endereco: 'Rua Germano Limeira, 128 - São Paulo/SP',
             turmaId: turma8B2025.id,
             ativo: true,
+            createdAt: new Date('2025-01-05'),
         },
     });
     const aluno5 = await prisma.aluno.create({
@@ -294,6 +332,7 @@ async function main() {
             endereco: 'Av. Central, 452 - São Paulo/SP',
             turmaId: turma8B2025.id,
             ativo: true,
+            createdAt: new Date('2025-01-05'),
         },
     });
 
@@ -310,6 +349,7 @@ async function main() {
             endereco: 'Rua Japão, 514 - São Paulo/SP',
             turmaId: turma9A2025.id,
             ativo: true,
+            createdAt: new Date('2025-01-05'),
         },
     });
     const aluno7 = await prisma.aluno.create({
@@ -324,6 +364,7 @@ async function main() {
             endereco: 'Av. das Palmeiras, 550 - São Paulo/SP',
             turmaId: turma9A2025.id,
             ativo: true,
+            createdAt: new Date('2025-01-05'),
         },
     });
     const aluno8 = await prisma.aluno.create({
@@ -338,6 +379,7 @@ async function main() {
             endereco: 'Imperatriz do Grimaldi, 2015 - São Paulo/SP',
             turmaId: turma9A2025.id,
             ativo: true,
+            createdAt: new Date('2025-01-05'),
         },
     });
     const aluno9 = await prisma.aluno.create({
@@ -352,6 +394,7 @@ async function main() {
             endereco: 'Imperatriz do Grimaldi, 2015 - São Paulo/SP',
             turmaId: turma9A2025.id,
             ativo: true,
+            createdAt: new Date('2025-01-05'),
         },
     });
 
@@ -368,6 +411,7 @@ async function main() {
             endereco: 'Rua Gentil Fabriano, 112 - São Paulo/SP',
             turmaId: turma9A2024.id,
             ativo: false,
+            createdAt: new Date('2024-02-01'),
             inativadoAt: new Date('2024-12-20'),
         },
     });
@@ -383,6 +427,7 @@ async function main() {
             endereco: 'Rua Melo Freitas, 333 - São Paulo/SP',
             turmaId: turma9A2024.id,
             ativo: false,
+            createdAt: new Date('2024-02-01'),
             inativadoAt: new Date('2024-12-20'),
         },
     });
@@ -401,12 +446,22 @@ async function main() {
             bimestre3: 7.0,
             bimestre4: 7.5,
             mediaFinal: 7.5,
-            criterio: 'Aprovado',
+            resultado: 'Aprovado',
         },
     });
     await prisma.nota.create({
-        data: { alunoId: aluno2.id, disciplinaId: portugues.id, bimestre1: 6.0, bimestre2: 5.0, bimestre3: 4.5 },
+        data: {
+            alunoId: aluno2.id,
+            disciplinaId: portugues.id,
+            bimestre1: 6.0,
+            bimestre2: 5.0,
+            bimestre3: 4.5,
+            mediaParcial: 5.2,
+            resultado: 'Cursando',
+        },
     });
+    // Reprovado pela média (4.5), mas com motivoAprovacao registrado pelo Conselho de Classe -
+    // resultado é sobrescrito para 'Aprovado' (mesma regra de editaMotivoAprovacao no notaController)
     await prisma.nota.create({
         data: {
             alunoId: aluno3.id,
@@ -416,15 +471,34 @@ async function main() {
             bimestre3: 4.0,
             bimestre4: 4.5,
             mediaFinal: 4.5,
-            criterio: 'Reprovado',
+            resultado: 'Aprovado',
+            motivoAprovacao: 'Conselho de Classe',
         },
     });
     await prisma.nota.create({
-        data: { alunoId: aluno4.id, disciplinaId: matematica.id, bimestre1: 7.0, bimestre2: 6.5, bimestre3: 7.5 },
+        data: {
+            alunoId: aluno4.id,
+            disciplinaId: matematica.id,
+            bimestre1: 7.0,
+            bimestre2: 6.5,
+            bimestre3: 7.5,
+            mediaParcial: 7.0,
+            resultado: 'Cursando',
+        },
     });
     await prisma.nota.create({
-        data: { alunoId: aluno5.id, disciplinaId: portugues.id, bimestre1: 9.0, bimestre2: 9.5, bimestre3: 10.0 },
+        data: {
+            alunoId: aluno5.id,
+            disciplinaId: portugues.id,
+            bimestre1: 9.0,
+            bimestre2: 9.5,
+            bimestre3: 10.0,
+            mediaParcial: 9.5,
+            resultado: 'Cursando',
+        },
     });
+    // Aprovado por média e presença - vai receber uma falta justificada mais abaixo,
+    // mas sem faltas suficientes para reprovar (ver seção de Faltas)
     await prisma.nota.create({
         data: {
             alunoId: aluno6.id,
@@ -434,7 +508,36 @@ async function main() {
             bimestre3: 6.0,
             bimestre4: 6.0,
             mediaFinal: 6.0,
-            criterio: 'Aprovado',
+            resultado: 'Aprovado',
+        },
+    });
+    // aluno7 (Rosalina Ferreira) fica sem nenhum registro de Nota - exemplo de aluno ainda sem notas lançadas
+
+    // Reprovado pela média (4.75), independente de faltas
+    await prisma.nota.create({
+        data: {
+            alunoId: aluno8.id,
+            disciplinaId: ciencias.id,
+            bimestre1: 5.0,
+            bimestre2: 5.5,
+            bimestre3: 4.0,
+            bimestre4: 4.5,
+            mediaFinal: 4.75,
+            resultado: 'Reprovado',
+        },
+    });
+    // Média 7.0 seria suficiente pra aprovar, mas a presença (ver Faltas abaixo) fica abaixo de 75% -
+    // reprovado por falta, não por nota
+    await prisma.nota.create({
+        data: {
+            alunoId: aluno9.id,
+            disciplinaId: ciencias.id,
+            bimestre1: 7.0,
+            bimestre2: 7.5,
+            bimestre3: 7.0,
+            bimestre4: 6.5,
+            mediaFinal: 7.0,
+            resultado: 'Reprovado',
         },
     });
 
@@ -470,7 +573,7 @@ async function main() {
             data: new Date('2025-01-16'),
         },
     });
-    await prisma.planejamento.create({
+    const planejamentoSistemaRespiratorio = await prisma.planejamento.create({
         data: {
             professorId: profCiencias.id,
             turmaId: turma9A2025.id,
@@ -480,9 +583,80 @@ async function main() {
         },
     });
 
+    // Planejamentos extras de Ciências (9º Ano A) para dar volume real de aulas
+    // e permitir demonstrar reprovação por falta de forma realista
+    const planejamentoSistemaCirculatorio = await prisma.planejamento.create({
+        data: {
+            professorId: profCiencias.id,
+            turmaId: turma9A2025.id,
+            disciplinaId: ciencias.id,
+            titulo: 'Sistema Circulatório',
+            numeroAulas: 2,
+            data: new Date('2025-01-24'),
+        },
+    });
+    await prisma.planejamento.create({
+        data: {
+            professorId: profCiencias.id,
+            turmaId: turma9A2025.id,
+            disciplinaId: ciencias.id,
+            titulo: 'Sistema Digestório',
+            numeroAulas: 2,
+            data: new Date('2025-01-31'),
+        },
+    });
+    const planejamentoSistemaNervoso = await prisma.planejamento.create({
+        data: {
+            professorId: profCiencias.id,
+            turmaId: turma9A2025.id,
+            disciplinaId: ciencias.id,
+            titulo: 'Sistema Nervoso',
+            numeroAulas: 3,
+            data: new Date('2025-02-07'),
+        },
+    });
+
     console.log('Tabela de planejamentos populada com sucesso\n');
 
-    console.log('Seed concluído com sucesso! 🎉\n');
+    // Popula tabela de faltas
+    console.log('Populando tabela de faltas');
+
+    // aluno6 (Fernando Rocha): 1 falta justificada em 8 aulas (87,5% de presença) -
+    // fica acima dos 75% mínimos, continua Aprovado mesmo com uma falta registrada
+    await prisma.falta.create({
+        data: {
+            alunoId: aluno6.id,
+            planejamentoId: planejamentoSistemaNervoso.id,
+            quantidadeFaltas: 1,
+            justificativa: 'Consulta médica agendada',
+        },
+    });
+    console.log('Falta justificada de Fernando Rocha lançada (Sistema Nervoso)');
+
+    // aluno9 (Julio Cesar Fonseca): 3 faltas em 8 aulas (62,5% de presença) -
+    // abaixo dos 75% mínimos, reprova por falta mesmo com média 7.0 na disciplina
+    await prisma.falta.create({
+        data: {
+            alunoId: aluno9.id,
+            planejamentoId: planejamentoSistemaRespiratorio.id,
+            quantidadeFaltas: 1,
+            justificativa: 'Atestado médico',
+        },
+    });
+    console.log('Falta justificada de Julio Cesar Fonseca lançada (Sistema Respiratório)');
+
+    await prisma.falta.create({
+        data: {
+            alunoId: aluno9.id,
+            planejamentoId: planejamentoSistemaCirculatorio.id,
+            quantidadeFaltas: 2,
+        },
+    });
+    console.log('Falta (não justificada) de Julio Cesar Fonseca lançada (Sistema Circulatório)');
+
+    console.log('Tabela de faltas populada com sucesso\n');
+
+    console.log('Seed concluído com sucesso\n');
 }
 
 main()
