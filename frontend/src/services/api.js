@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Configuração base do Axios
 const api = axios.create({
-    baseURL: 'http://localhost:3000',
+    baseURL: process.env.REACT_APP_API_URL || 'http://localhost:3000',
     headers: {
         'Content-Type': 'application/json',
     },
@@ -19,7 +19,7 @@ api.interceptors.request.use(
     },
     (error) => {
         return Promise.reject(error);
-    }
+    },
 );
 
 // Intercepta e trata os erros de resposta
@@ -34,8 +34,8 @@ api.interceptors.response.use(
             localStorage.removeItem('user');
             window.location.href = '/login';
         }
-    return Promise.reject(error);
-    }
+        return Promise.reject(error);
+    },
 );
 
 // Login
@@ -54,7 +54,7 @@ const logout = async () => {
         await api.post('/auth/logout');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-    // Garante logout
+        // Garante logout
     } catch (error) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
